@@ -1,9 +1,9 @@
 package com.example.dao;
 
 import com.example.database.DatabaseConnection;
+import com.example.dto.CustomProductsResponse;
 import com.example.model.ProductInDisplay;
 
-import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,21 +34,16 @@ public class ProductInDisplayDAO {
         }
     }
 
-    public List<ProductInDisplay> findByVendorId(int vendorId)
+    public List<CustomProductsResponse> findByVendorId(int vendorId)
             throws SQLException {
 
         String sql = """
-                SELECT
-                    ProductInDisplayId,
-                    ProductId,
-                    VendorId,
-                    Quantity,
-                    Price
+                SELECT *
                 FROM ProductInDisplay
                 WHERE VendorId = ?
                 """;
 
-        List<ProductInDisplay> listings = new ArrayList<>();
+        List<CustomProductsResponse> listings = new ArrayList<>();
 
         try (
                 Connection connection = DatabaseConnection.getConnection();
@@ -60,17 +55,11 @@ public class ProductInDisplayDAO {
 
                 while (resultSet.next()) {
 
-                    ProductInDisplay listing = new ProductInDisplay();
+                    CustomProductsResponse listing = new CustomProductsResponse();
 
-                    listing.setProductInDisplayId(
-                            resultSet.getInt("ProductInDisplayId")
-                    );
-                    listing.setProductId(
-                            resultSet.getInt("ProductId")
-                    );
-                    listing.setVendorId(
-                            resultSet.getInt("VendorId")
-                    );
+                    String productName = getProductName(resultSet.getInt("ProductId"));
+                    listing.setProductName(productName);
+                    listing.setVendorName(getVendorName(vendorId));
                     listing.setQuantity(
                             resultSet.getInt("Quantity")
                     );
@@ -86,11 +75,11 @@ public class ProductInDisplayDAO {
         return listings;
     }
 
-    public List<ProductInDisplay> getAllProduct(int productId) throws SQLException{
+    public List<CustomProductsResponse> getAllProduct(int productId) throws SQLException{
         String sql = """
                 SELECT * FROM ProductInDisplay 
                 WHERE ProductId = ?""";
-        List<ProductInDisplay> listings = new ArrayList<>();
+        List<CustomProductsResponse> listings = new ArrayList<>();
         try(
                 Connection connection = DatabaseConnection.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql);
@@ -98,17 +87,36 @@ public class ProductInDisplayDAO {
             statement.setInt(1,productId);
             try(ResultSet resultSet = statement.executeQuery()){
                 while(resultSet.next()){
-                    ProductInDisplay productInDisplay = new ProductInDisplay();
-                    productInDisplay.setProductId(resultSet.getInt("ProductId"));
-                    productInDisplay.setVendorId(resultSet.getInt("VendorId"));
-                    productInDisplay.setPrice(resultSet.getDouble("Price"));
-                    productInDisplay.setQuantity(resultSet.getInt("Quantity"));
-                    productInDisplay.setProductInDisplayId(resultSet.getInt("ProductInDisplayId"));
-                    listings.add(productInDisplay);
+                    CustomProductsResponse customProductsResponse = new CustomProductsResponse();
+                    customProductsResponse.setPrice(resultSet.getInt("Price"));
+                    customProductsResponse.setQuantity(resultSet.getInt("Quantity"));
+                    String name = getProductName(resultSet.getInt("ProductId"));
+                    customProductsResponse.setProductName(name);
+                    customProductsResponse.setVendorName(getVendorName(resultSet.getInt("VendorId")));
+                    listings.add(customProductsResponse);
                 }
             }
         }
         return listings;
+    }
+
+    public String getVendorName(int vendorid) throws  SQLException{
+        String sql = """
+                SELECT Name FROM Vendor
+                WHERE VendorId = ?""";
+
+        try(
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+        ){
+            statement.setInt(1,vendorid);
+            try(ResultSet resultSet = statement.executeQuery()){
+                if(resultSet.next()){
+                    return resultSet.getString("Name");
+                }
+            }
+            return "Nil";
+        }
     }
 
     public boolean update(
@@ -217,6 +225,63 @@ public class ProductInDisplayDAO {
                 }
                 return null;
             }
+        }
+    }
+
+    public String getProductName(int productId) throws  SQLException{
+        String sql = """
+                SELECT Name FROM Product
+                WHERE ProductId = ?""";
+
+        try(
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+        ){
+            statement.setInt(1,productId);
+            try(ResultSet resultSet = statement.executeQuery()){
+                if(resultSet.next()){
+                    return resultSet.getString("Name");
+                }
+            }
+            return "Nil";
+        }
+    }
+
+    public String getVendorNameFromProductInDisplayId(int productInDisId) throws SQLException{
+        String sql = """
+                SELECT Name FROM ProductInDisplay as p LEFT JOIN Vendor as v
+                ON p.VendorId = v.VendorId
+                WHERE p.ProductInDisplayId = ?""";
+        try(
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+        ){
+            statement.setInt(1,productInDisId);
+            try(ResultSet resultSet = statement.executeQuery()){
+                if(resultSet.next()){
+                    return resultSet.getString("Name");
+                }
+            }
+        }
+        return "X";
+
+    }
+    public int getProductIdFromProdInDisId(int productInDisId) throws  SQLException{
+        String sql = """
+                SELECT ProductId FROM ProductInDisplay
+                WHERE ProductInDisplayId = ?""";
+
+        try(
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+        ){
+            statement.setInt(1,productInDisId);
+            try(ResultSet resultSet = statement.executeQuery()){
+                if(resultSet.next()){
+                    return resultSet.getInt("ProductId");
+                }
+            }
+            return 0;
         }
     }
 

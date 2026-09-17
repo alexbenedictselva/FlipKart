@@ -4,6 +4,22 @@ public class Order {
     private int orderId;
     private int custId;
     private double totalAmount;
+    private String purchasedDate;
+
+    public String getPurchasedDate() {
+        return purchasedDate;
+    }
+
+    public void setPurchasedDate(String purchasedDate) {
+        this.purchasedDate = purchasedDate;
+    }
+
+    public Order(int orderId, double totalAmount, String purchasedDate, int custId) {
+        this.orderId = orderId;
+        this.totalAmount = totalAmount;
+        this.purchasedDate = purchasedDate;
+        this.custId = custId;
+    }
 
     public Order(int orderId, int custId, double totalAmount) {
         this.orderId = orderId;

@@ -13,9 +13,9 @@ public class CustomerDAO {
     public void create(Customer customer) throws SQLException {
 
         String sql = """
-                INSERT INTO Customer
-                (Name, Address, PhNo, Password)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO Users
+                (Name,PhNo, Password, Role)
+                VALUES (?,?, ?, ?)
                 """;
 
         try (
@@ -23,9 +23,9 @@ public class CustomerDAO {
                 PreparedStatement statement = connection.prepareStatement(sql)
         ) {
             statement.setString(1, customer.getName());
-            statement.setString(2, customer.getAddress());
-            statement.setString(3, customer.getPhNo());
-            statement.setString(4, customer.getPassword());
+            statement.setString(2, customer.getPhNo());
+            statement.setString(3, customer.getPassword());
+            statement.setString(4, "CUSTOMER");
 
             statement.executeUpdate();
         }
@@ -35,9 +35,9 @@ public class CustomerDAO {
             throws SQLException {
 
         String sql = """
-                SELECT CustId, Name, Address, PhNo, Password
-                FROM Customer
-                WHERE PhNo = ?
+                SELECT Name, UserId, PhNo, Password
+                FROM Users
+                WHERE PhNo = ? AND Role = 'CUSTOMER'
                 """;
 
         try (
@@ -50,11 +50,10 @@ public class CustomerDAO {
                 if (!resultSet.next()) {
                     return null;
                 }
-                Customer customer = new Customer();
 
-                customer.setCustId(resultSet.getInt("CustId"));
+                Customer customer = new Customer();
                 customer.setName(resultSet.getString("Name"));
-                customer.setAddress(resultSet.getString("Address"));
+                customer.setCustId(resultSet.getInt("UserId"));
                 customer.setPhNo(resultSet.getString("PhNo"));
                 customer.setPassword(resultSet.getString("Password"));
 
@@ -68,8 +67,8 @@ public class CustomerDAO {
 
         String sql = """
                 SELECT 1
-                FROM Customer
-                WHERE PhNo = ?
+                FROM Users
+                WHERE PhNo = ? AND Role = 'CUSTOMER'
                 """;
 
         try (
@@ -82,5 +81,24 @@ public class CustomerDAO {
                 return resultSet.next();
             }
         }
+    }
+
+    public String getCustomerName(int custId) throws SQLException{
+        String sql = """
+                SELECT Name FROM Users
+                WHERE UserId = ?""";
+
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ){
+            statement.setInt(1,custId);
+            try(ResultSet resultSet = statement.executeQuery()){
+                if(resultSet.next()){
+                    return resultSet.getString("Name");
+                }
+            }
+        }
+        return "X";
     }
 }

@@ -1,6 +1,9 @@
 package com.example.service;
 
+import com.example.dao.OrderDAO;
 import com.example.dao.ProductInDisplayDAO;
+import com.example.dto.VendorOrdersResponse;
+import com.example.dto.CustomProductsResponse;
 import com.example.model.ProductInDisplay;
 
 import java.sql.SQLException;
@@ -9,6 +12,7 @@ import java.util.List;
 public class ProductInDisplayService {
 
     private final ProductInDisplayDAO dao = new ProductInDisplayDAO();
+    private final OrderDAO orderDAO= new OrderDAO();
 
     public void createProduct(int productId, int vendorId, double price, int quantity)
             throws SQLException {
@@ -27,7 +31,7 @@ public class ProductInDisplayService {
         dao.create(listing);
     }
 
-    public List<ProductInDisplay> getAllVendorProducts(int vendorId)
+    public List<CustomProductsResponse> getAllVendorProducts(int vendorId)
             throws SQLException {
 
         validateVendorId(vendorId);
@@ -90,11 +94,18 @@ public class ProductInDisplayService {
         }
     }
 
-    public List<ProductInDisplay> displayAllProduct(int productId) throws SQLException{
+//    public List<OrderItems> getVendorOrders(int)
+
+    public List<CustomProductsResponse> displayAllProduct(int productId) throws SQLException{
         validateProductId(productId);
-        List<ProductInDisplay> listing = dao.getAllProduct(productId);
-        return listing;
+        return dao.getAllProduct(productId);
     }
+
+    public List<VendorOrdersResponse> getAllVendorOrder(int vendorId) throws SQLException{
+        return orderDAO.getAllOrderOfVendor(vendorId);
+    }
+
+
 
     private void validateProductId(int productId) {
         if (productId <= 0) {

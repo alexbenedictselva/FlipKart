@@ -1,7 +1,10 @@
 package com.example.dao;
 
+import com.example.database.DatabaseConnection;
+import com.example.model.Delivery;
 import com.example.model.DeliveryStatus;
 
+import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -57,5 +60,30 @@ public class DeliveryDAO {
         }
 
         throw new SQLException("Failed to create delivery");
+    }
+    public Delivery getDelivery(int deliveryId) throws SQLException{
+        String sql = """
+                SELECT * FROM Delivery
+                WHERE DeliveryId = ?""";
+
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement =
+                        connection.prepareStatement(sql)
+        ){
+            statement.setInt(1,deliveryId);
+            try(ResultSet resultSet = statement.executeQuery()){
+                if(resultSet.next()){
+                    Delivery delivery = new Delivery();
+                    delivery.setDeliveryId(resultSet.getInt("DeliveryId"));
+                    delivery.setDeliveryPartnerId(resultSet.getInt("DeliveryPartnerId"));
+                    delivery.setDeliveryStatus(resultSet.getString("DeliveryStatus"));
+                    delivery.setExpectedDate(resultSet.getTimestamp("ExpectedDate").toLocalDateTime().toLocalDate());
+
+                    return delivery;
+                }
+            }
+        }
+        return null;
     }
 }

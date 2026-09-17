@@ -1,10 +1,10 @@
 package com.example.servlet;
 
-import com.example.dto.CustomerLoginRequest;
-import com.example.dto.CustomerRegisterRequest;
-import com.example.dto.CustomerResponse;
+import com.example.dto.*;
 import com.example.model.Customer;
 import com.example.service.CustomerService;
+import com.example.service.OrderService;
+import com.example.service.ProductInDisplayService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServlet;
@@ -13,10 +13,13 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 public class CustomerServlet extends HttpServlet {
 
     private final CustomerService customerService = new CustomerService();
+    private final OrderService  orderService = new OrderService();
+    private final ProductInDisplayService productInDisplayService = new ProductInDisplayService();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -32,6 +35,26 @@ public class CustomerServlet extends HttpServlet {
         switch (path) {
             case "/register" -> register(req, res);
             case "/login" -> login(req, res);
+            default -> sendError(res, HttpServletResponse.SC_NOT_FOUND, "Endpoint not found");
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
+
+        String path = req.getPathInfo();
+
+        if (path == null || path.equals("/")) {
+            sendError(res, HttpServletResponse.SC_NOT_FOUND, "Endpoint not found");
+            return;
+        }
+
+        switch (path) {
+            case "/products" -> displayAllProducts(req, res);
+            case "/orders" -> getAllOrders(req,res);
+            case "/orderHistory" -> getAllDeliveredOrders(req,res);
+            case "/currentOrders" -> getAllCurrentOrders(req,res);
+
             default -> sendError(res, HttpServletResponse.SC_NOT_FOUND, "Endpoint not found");
         }
     }
@@ -112,6 +135,123 @@ public class CustomerServlet extends HttpServlet {
         }
     }
 
+    private void displayAllProducts(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        try {
+            String productIdParameter = req.getParameter("productId");
+
+            if (productIdParameter == null) {
+                sendError(
+                        res,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "ProductId not provided"
+                );
+                return;
+            }
+
+            int productId = Integer.parseInt(productIdParameter);
+
+            List<CustomProductsResponse> productInDisplays =
+                    productInDisplayService.displayAllProduct(productId);
+
+            res.setStatus(HttpServletResponse.SC_OK);
+            objectMapper.writeValue(
+                    res.getWriter(),
+                    productInDisplays
+            );
+
+        } catch (NumberFormatException e) {
+            sendError(
+                    res,
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "ProductId must be a valid number"
+            );
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sendError(
+                    res,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Database error"
+            );
+        }
+    }
+
+    public void getAllOrders(HttpServletRequest req,HttpServletResponse res) throws IOException{
+        try{
+            String custIdStr = req.getParameter("customerId");
+
+            if (custIdStr == null) {
+                sendError(
+                        res,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "customerId not provided"
+                );
+                return;
+            }
+
+            int custId = Integer.parseInt(custIdStr);
+            List<CustomerOrderViewingResponse> customerOrderViewingResponses = orderService.getAllCustomerOrder(custId);
+            objectMapper.writeValue(res.getWriter(),customerOrderViewingResponses);
+        }catch(SQLException e){
+            e.printStackTrace();
+            sendError(
+                    res,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Database error"
+            );
+        }
+    }
+
+    public void getAllDeliveredOrders(HttpServletRequest req,HttpServletResponse res) throws IOException{
+        try{
+            String custIdStr = req.getParameter("customerId");
+
+            if (custIdStr == null) {
+                sendError(
+                        res,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "customerId not provided"
+                );
+                return;
+            }
+
+            int custId = Integer.parseInt(custIdStr);
+            List<CustomerOrderViewingResponse> customerOrderViewingResponses = orderService.getAllCompletedOrder(custId);
+            objectMapper.writeValue(res.getWriter(),customerOrderViewingResponses);
+        }catch(SQLException e){
+            e.printStackTrace();
+            sendError(
+                    res,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Database error"
+            );
+        }
+    }
+
+    public void getAllCurrentOrders(HttpServletRequest req,HttpServletResponse res) throws IOException{
+        try{
+            String custIdStr = req.getParameter("customerId");
+
+            if (custIdStr == null) {
+                sendError(
+                        res,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "customerId not provided"
+                );
+                return;
+            }
+
+            int custId = Integer.parseInt(custIdStr);
+            List<CustomerOrderViewingResponse> customerOrderViewingResponses = orderService.getAllCurrentOrders(custId);
+            objectMapper.writeValue(res.getWriter(),customerOrderViewingResponses);
+        }catch(SQLException e){
+            e.printStackTrace();
+            sendError(
+                    res,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Database error"
+            );
+        }
+    }
     private void sendError(
             HttpServletResponse res,
             int status,

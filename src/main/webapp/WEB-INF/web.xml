@@ -10,10 +10,10 @@
 
     <servlet>
 
-        <servlet-name>ProductInDisplayServlet</servlet-name>
+        <servlet-name>VendorServlet</servlet-name>
 
         <servlet-class>
-            com.example.servlet.ProductInDisplayServlet
+            com.example.servlet.VendorServlet
         </servlet-class>
 
     </servlet>
@@ -38,7 +38,7 @@
 
     <servlet-mapping>
 
-        <servlet-name>ProductInDisplayServlet</servlet-name>
+        <servlet-name>VendorServlet</servlet-name>
 
         <url-pattern>/vendor/products/*</url-pattern>
 

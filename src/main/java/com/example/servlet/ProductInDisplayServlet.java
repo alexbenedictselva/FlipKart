@@ -1,5 +1,6 @@
 package com.example.servlet;
 
+import com.example.dto.CustomProductsResponse;
 import com.example.dto.ProductInDisplayUpdateRequest;
 import com.example.model.ProductInDisplay;
 import com.example.service.ProductInDisplayService;
@@ -92,10 +93,6 @@ public class ProductInDisplayServlet
             return;
         }
 
-        if (path.startsWith("/getAllProducts/")) {
-            getAllProd(req, res);
-            return;
-        }
         try {
             String vendorIdParameter =
                     req.getParameter("vendorId");
@@ -111,7 +108,7 @@ public class ProductInDisplayServlet
                     Integer.parseInt(
                             vendorIdParameter
                     );
-            List<ProductInDisplay> listings =
+            List<CustomProductsResponse> listings =
                     service.getAllVendorProducts(
                             vendorId
                     );
@@ -143,23 +140,23 @@ public class ProductInDisplayServlet
             );
         }
     }
-    private void getAllProd(HttpServletRequest req,HttpServletResponse res) throws  IOException{
-        try {
-            String productId = req.getParameter("productId");
-            if(productId == null){
-                sendError(res,HttpServletResponse.SC_BAD_REQUEST,"ProductId not provided");
-                return;
-            }
-            int prodId = Integer.parseInt(req.getParameter("productId"));
-
-            List<ProductInDisplay> productInDisplays = service.displayAllProduct(prodId);
-            res.setStatus(HttpServletResponse.SC_OK);
-            objectMapper.writeValue(res.getWriter(),productInDisplays);
-        }catch (SQLException e){
-            e.printStackTrace();
-            sendError(res,HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Database Error");
-        }
-    }
+//    private void getAllProd(HttpServletRequest req,HttpServletResponse res) throws  IOException{
+//        try {
+//            String productId = req.getParameter("productId");
+//            if(productId == null){
+//                sendError(res,HttpServletResponse.SC_BAD_REQUEST,"ProductId not provided");
+//                return;
+//            }
+//            int prodId = Integer.parseInt(req.getParameter("productId"));
+//
+//            List<VendorProductResponse> productInDisplays = service.displayAllProduct(prodId);
+//            res.setStatus(HttpServletResponse.SC_OK);
+//            objectMapper.writeValue(res.getWriter(),productInDisplays);
+//        }catch (SQLException e){
+//            e.printStackTrace();
+//            sendError(res,HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Database Error");
+//        }
+//    }
 
     private void doPatch(
             HttpServletRequest req,
