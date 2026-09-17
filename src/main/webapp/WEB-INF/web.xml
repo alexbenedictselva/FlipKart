@@ -30,6 +30,10 @@
         <servlet-name>CartServlet</servlet-name>
         <servlet-class>com.example.servlet.CartServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>OrderServlet</servlet-name>
+        <servlet-class>com.example.servlet.OrderServlet</servlet-class>
+    </servlet>
 
 
     <servlet-mapping>
@@ -37,6 +41,13 @@
         <servlet-name>ProductInDisplayServlet</servlet-name>
 
         <url-pattern>/vendor/products/*</url-pattern>
+
+    </servlet-mapping>
+    <servlet-mapping>
+
+        <servlet-name>OrderServlet</servlet-name>
+
+        <url-pattern>/customer/order/*</url-pattern>
 
     </servlet-mapping>
     <servlet-mapping>

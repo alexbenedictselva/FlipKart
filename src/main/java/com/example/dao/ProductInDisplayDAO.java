@@ -219,4 +219,61 @@ public class ProductInDisplayDAO {
             }
         }
     }
+
+    public ProductInDisplay getProduct(
+            Connection connection,
+            int productInDisplayId
+    ) throws SQLException {
+
+        String sql = """
+            SELECT ProductInDisplayId,
+                   ProductId,
+                   VendorId,
+                   Quantity,
+                   Price
+            FROM ProductInDisplay
+            WHERE ProductInDisplayId = ?
+            FOR UPDATE
+            """;
+
+        try (
+                PreparedStatement statement =
+                        connection.prepareStatement(sql)
+        ) {
+            statement.setInt(1, productInDisplayId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                if (!resultSet.next()) {
+                    return null;
+                }
+
+                ProductInDisplay product =
+                        new ProductInDisplay();
+
+                product.setProductInDisplayId(
+                        resultSet.getInt("ProductInDisplayId")
+                );
+
+                product.setProductId(
+                        resultSet.getInt("ProductId")
+                );
+
+                product.setVendorId(
+                        resultSet.getInt("VendorId")
+                );
+
+                product.setQuantity(
+                        resultSet.getInt("Quantity")
+                );
+
+                product.setPrice(
+                        resultSet.getDouble("Price")
+                );
+
+                return product;
+            }
+        }
+    }
+
 }
