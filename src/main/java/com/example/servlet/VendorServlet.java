@@ -18,115 +18,180 @@ import java.util.List;
 import java.util.Map;
 
 public class VendorServlet extends HttpServlet {
+
     private final ProductInDisplayService service = new ProductInDisplayService();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    protected void service(HttpServletRequest req,HttpServletResponse res) throws ServletException,IOException {
+    protected void service(
+            HttpServletRequest req,
+            HttpServletResponse res
+    ) throws ServletException, IOException {
+
         if ("PATCH".equalsIgnoreCase(req.getMethod())) {
-            doPatch(req,res);
+            doPatch(req, res);
             return;
         }
-        super.service(req,res);
+
+        super.service(req, res);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req,HttpServletResponse res) throws ServletException,IOException {
+    protected void doPost(
+            HttpServletRequest req,
+            HttpServletResponse res
+    ) throws ServletException, IOException {
+
         setJsonResponse(res);
+
         try {
             ProductInDisplay listing = objectMapper.readValue(
                     req.getInputStream(),
                     ProductInDisplay.class
             );
 
+            int vendorId = getAuthenticatedUserId(req);
+
             service.createProduct(
                     listing.getProductId(),
-                    listing.getVendorId(),
+                    vendorId,
                     listing.getPrice(),
                     listing.getQuantity()
             );
 
             res.setStatus(HttpServletResponse.SC_CREATED);
-            writeMessage(res,"Product posted successfully");
+            writeMessage(res, "Product posted successfully");
 
         } catch (IllegalArgumentException e) {
-            sendError(res,HttpServletResponse.SC_BAD_REQUEST,e.getMessage());
+            sendError(
+                    res,
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    e.getMessage()
+            );
         } catch (SQLException e) {
             e.printStackTrace();
-            sendError(res,HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Database error");
+            sendError(
+                    res,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Database error"
+            );
         }
     }
 
     @Override
-    protected void doGet(HttpServletRequest req,HttpServletResponse res) throws ServletException,IOException {
+    protected void doGet(
+            HttpServletRequest req,
+            HttpServletResponse res
+    ) throws ServletException, IOException {
+
         setJsonResponse(res);
 
         String path = req.getPathInfo();
 
-        if(path == null){
-            sendError(res,HttpServletResponse.SC_NOT_FOUND,"Endpoint not found");
+        if (path == null) {
+            sendError(
+                    res,
+                    HttpServletResponse.SC_NOT_FOUND,
+                    "Endpoint not found"
+            );
             return;
         }
 
-        switch (path){
-            case "/GetAllVendorOrders" -> getAllVendorOrders(req,res);
+        switch (path) {
+            case "/GetAllVendorOrders" -> getAllVendorOrders(req, res);
+            case "/" -> getAllVendorProducts(req, res);
+            default -> sendError(
+                    res,
+                    HttpServletResponse.SC_NOT_FOUND,
+                    "Endpoint not found"
+            );
         }
+    }
+
+    private void getAllVendorProducts(
+            HttpServletRequest req,
+            HttpServletResponse res
+    ) throws IOException {
+
         try {
-            String vendorIdParameter = req.getParameter("vendorId");
-
-            if (vendorIdParameter == null) {
-                sendError(res,HttpServletResponse.SC_BAD_REQUEST,"vendorId is required");
-                return;
-            }
-
-            int vendorId = Integer.parseInt(vendorIdParameter);
+            int vendorId = getAuthenticatedUserId(req);
 
             List<CustomProductsResponse> listings =
                     service.getAllVendorProducts(vendorId);
 
             res.setStatus(HttpServletResponse.SC_OK);
-            objectMapper.writeValue(res.getWriter(),listings);
+            objectMapper.writeValue(
+                    res.getWriter(),
+                    listings
+            );
 
-        } catch (NumberFormatException e) {
-            sendError(res,HttpServletResponse.SC_BAD_REQUEST,"vendorId must be a valid number");
         } catch (IllegalArgumentException e) {
-            sendError(res,HttpServletResponse.SC_BAD_REQUEST,e.getMessage());
+            sendError(
+                    res,
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    e.getMessage()
+            );
         } catch (SQLException e) {
             e.printStackTrace();
-            sendError(res,HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Database error");
+            sendError(
+                    res,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Database error"
+            );
         }
     }
 
-    private void getAllVendorOrders(HttpServletRequest req,HttpServletResponse res){
-        int vendorId = Integer.parseInt(req.getParameter("vendorId"));
-        try{
-            List<VendorOrdersResponse> vendorOrdersResponses = service.getAllVendorOrder(vendorId);
+    private void getAllVendorOrders(
+            HttpServletRequest req,
+            HttpServletResponse res
+    ) throws IOException {
+
+        try {
+            int vendorId = getAuthenticatedUserId(req);
+
+            List<VendorOrdersResponse> vendorOrdersResponses =
+                    service.getAllVendorOrder(vendorId);
+
             res.setStatus(HttpServletResponse.SC_OK);
-            objectMapper.writeValue(res.getWriter(), vendorOrdersResponses);
-        } catch (SQLException | IOException e) {
+            objectMapper.writeValue(
+                    res.getWriter(),
+                    vendorOrdersResponses
+            );
+
+        } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException(e);
+            sendError(
+                    res,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Database error"
+            );
         }
     }
-    private void doPatch(HttpServletRequest req,HttpServletResponse res) throws IOException {
+
+    private void doPatch(
+            HttpServletRequest req,
+            HttpServletResponse res
+    ) throws IOException {
+
         setJsonResponse(res);
 
         try {
-            String listingIdParameter = req.getParameter("productInDisplayId");
-            String vendorIdParameter = req.getParameter("vendorId");
+            String listingIdParameter =
+                    req.getParameter("productInDisplayId");
 
             if (listingIdParameter == null) {
-                sendError(res,HttpServletResponse.SC_BAD_REQUEST,"productInDisplayId is required");
+                sendError(
+                        res,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "productInDisplayId is required"
+                );
                 return;
             }
 
-            if (vendorIdParameter == null) {
-                sendError(res,HttpServletResponse.SC_BAD_REQUEST,"vendorId is required");
-                return;
-            }
+            int productInDisplayId =
+                    Integer.parseInt(listingIdParameter);
 
-            int productInDisplayId = Integer.parseInt(listingIdParameter);
-            int vendorId = Integer.parseInt(vendorIdParameter);
+            int vendorId = getAuthenticatedUserId(req);
 
             ProductInDisplayUpdateRequest request =
                     objectMapper.readValue(
@@ -142,68 +207,131 @@ public class VendorServlet extends HttpServlet {
             );
 
             res.setStatus(HttpServletResponse.SC_OK);
-            writeMessage(res,"Product updated successfully");
+            writeMessage(
+                    res,
+                    "Product updated successfully"
+            );
 
         } catch (NumberFormatException e) {
-            sendError(res,HttpServletResponse.SC_BAD_REQUEST,"IDs must be valid numbers");
+            sendError(
+                    res,
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "productInDisplayId must be a valid number"
+            );
         } catch (IllegalArgumentException e) {
-            sendError(res,HttpServletResponse.SC_BAD_REQUEST,e.getMessage());
+            sendError(
+                    res,
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    e.getMessage()
+            );
         } catch (SQLException e) {
             e.printStackTrace();
-            sendError(res,HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Database error");
+            sendError(
+                    res,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Database error"
+            );
         }
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req,HttpServletResponse res) throws ServletException,IOException {
+    protected void doDelete(
+            HttpServletRequest req,
+            HttpServletResponse res
+    ) throws ServletException, IOException {
+
         setJsonResponse(res);
 
         try {
-            String listingIdParameter = req.getParameter("productInDisplayId");
-            String vendorIdParameter = req.getParameter("vendorId");
+            String listingIdParameter =
+                    req.getParameter("productInDisplayId");
 
-            if (listingIdParameter == null || vendorIdParameter == null) {
-                sendError(res,HttpServletResponse.SC_BAD_REQUEST,"productInDisplayId and vendorId are required");
+            if (listingIdParameter == null) {
+                sendError(
+                        res,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "productInDisplayId is required"
+                );
                 return;
             }
 
-            int productInDisplayId = Integer.parseInt(listingIdParameter);
-            int vendorId = Integer.parseInt(vendorIdParameter);
+            int productInDisplayId =
+                    Integer.parseInt(listingIdParameter);
 
-            service.deleteVendorProduct(productInDisplayId,vendorId);
+            int vendorId = getAuthenticatedUserId(req);
+
+            service.deleteVendorProduct(
+                    productInDisplayId,
+                    vendorId
+            );
 
             res.setStatus(HttpServletResponse.SC_OK);
-            writeMessage(res,"Product deleted successfully");
+            writeMessage(
+                    res,
+                    "Product deleted successfully"
+            );
 
         } catch (NumberFormatException e) {
-            sendError(res,HttpServletResponse.SC_BAD_REQUEST,"IDs must be valid numbers");
+            sendError(
+                    res,
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "productInDisplayId must be a valid number"
+            );
         } catch (IllegalArgumentException e) {
-            sendError(res,HttpServletResponse.SC_BAD_REQUEST,e.getMessage());
+            sendError(
+                    res,
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    e.getMessage()
+            );
         } catch (SQLException e) {
             e.printStackTrace();
-            sendError(res,HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Database error");
+            sendError(
+                    res,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Database error"
+            );
         }
     }
 
+    private int getAuthenticatedUserId(HttpServletRequest req) {
+        Object userId = req.getAttribute("userId");
 
+        if (userId == null) {
+            throw new IllegalStateException(
+                    "Authenticated user ID not found"
+            );
+        }
+
+        return (Integer) userId;
+    }
 
     private void setJsonResponse(HttpServletResponse res) {
         res.setContentType("application/json");
         res.setCharacterEncoding("UTF-8");
     }
 
-    private void writeMessage(HttpServletResponse res,String message) throws IOException {
+    private void writeMessage(
+            HttpServletResponse res,
+            String message
+    ) throws IOException {
+
         objectMapper.writeValue(
                 res.getWriter(),
-                Map.of("message",message)
+                Map.of("message", message)
         );
     }
 
-    private void sendError(HttpServletResponse res,int status,String message) throws IOException {
+    private void sendError(
+            HttpServletResponse res,
+            int status,
+            String message
+    ) throws IOException {
+
         res.setStatus(status);
+
         objectMapper.writeValue(
                 res.getWriter(),
-                Map.of("error",message)
+                Map.of("error", message)
         );
     }
 }

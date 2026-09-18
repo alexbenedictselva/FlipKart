@@ -2,6 +2,7 @@ package com.example.servlet;
 
 import com.example.dto.*;
 import com.example.model.Customer;
+import com.example.security.JwtUtil;
 import com.example.service.CustomerService;
 import com.example.service.OrderService;
 import com.example.service.ProductInDisplayService;
@@ -17,8 +18,9 @@ import java.util.List;
 
 public class CustomerServlet extends HttpServlet {
 
+    private final JwtUtil jwtUtil = new JwtUtil();
     private final CustomerService customerService = new CustomerService();
-    private final OrderService  orderService = new OrderService();
+    private final OrderService orderService = new OrderService();
     private final ProductInDisplayService productInDisplayService = new ProductInDisplayService();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -51,10 +53,9 @@ public class CustomerServlet extends HttpServlet {
 
         switch (path) {
             case "/products" -> displayAllProducts(req, res);
-            case "/orders" -> getAllOrders(req,res);
-            case "/orderHistory" -> getAllDeliveredOrders(req,res);
-            case "/currentOrders" -> getAllCurrentOrders(req,res);
-
+            case "/orders" -> getAllOrders(req, res);
+            case "/orderHistory" -> getAllDeliveredOrders(req, res);
+            case "/currentOrders" -> getAllCurrentOrders(req, res);
             default -> sendError(res, HttpServletResponse.SC_NOT_FOUND, "Endpoint not found");
         }
     }
@@ -84,11 +85,7 @@ public class CustomerServlet extends HttpServlet {
             sendError(res, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (SQLException e) {
             e.printStackTrace();
-            sendError(
-                    res,
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Database error"
-            );
+            sendError(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
         }
     }
 
@@ -113,11 +110,15 @@ public class CustomerServlet extends HttpServlet {
                 return;
             }
 
-            CustomerResponse response = new CustomerResponse(
+            String token = jwtUtil.generateToken(
                     customer.getCustId(),
-                    customer.getName(),
-                    customer.getAddress(),
-                    customer.getPhNo()
+                    customer.getRole()
+            );
+
+            LoginResponse response = new LoginResponse(
+                    customer.getCustId(),
+                    customer.getRole(),
+                    token
             );
 
             res.setStatus(HttpServletResponse.SC_OK);
@@ -127,11 +128,7 @@ public class CustomerServlet extends HttpServlet {
             sendError(res, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (SQLException e) {
             e.printStackTrace();
-            sendError(
-                    res,
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Database error"
-            );
+            sendError(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
         }
     }
 
@@ -175,23 +172,24 @@ public class CustomerServlet extends HttpServlet {
         }
     }
 
-    public void getAllOrders(HttpServletRequest req,HttpServletResponse res) throws IOException{
-        try{
-            String custIdStr = req.getParameter("customerId");
+    public void getAllOrders(
+            HttpServletRequest req,
+            HttpServletResponse res
+    ) throws IOException {
 
-            if (custIdStr == null) {
-                sendError(
-                        res,
-                        HttpServletResponse.SC_BAD_REQUEST,
-                        "customerId not provided"
-                );
-                return;
-            }
+        try {
+            int custId = getAuthenticatedUserId(req);
 
-            int custId = Integer.parseInt(custIdStr);
-            List<CustomerOrderViewingResponse> customerOrderViewingResponses = orderService.getAllCustomerOrder(custId);
-            objectMapper.writeValue(res.getWriter(),customerOrderViewingResponses);
-        }catch(SQLException e){
+            List<CustomerOrderViewingResponse> customerOrderViewingResponses =
+                    orderService.getAllCustomerOrder(custId);
+
+            res.setStatus(HttpServletResponse.SC_OK);
+            objectMapper.writeValue(
+                    res.getWriter(),
+                    customerOrderViewingResponses
+            );
+
+        } catch (SQLException e) {
             e.printStackTrace();
             sendError(
                     res,
@@ -201,23 +199,24 @@ public class CustomerServlet extends HttpServlet {
         }
     }
 
-    public void getAllDeliveredOrders(HttpServletRequest req,HttpServletResponse res) throws IOException{
-        try{
-            String custIdStr = req.getParameter("customerId");
+    public void getAllDeliveredOrders(
+            HttpServletRequest req,
+            HttpServletResponse res
+    ) throws IOException {
 
-            if (custIdStr == null) {
-                sendError(
-                        res,
-                        HttpServletResponse.SC_BAD_REQUEST,
-                        "customerId not provided"
-                );
-                return;
-            }
+        try {
+            int custId = getAuthenticatedUserId(req);
 
-            int custId = Integer.parseInt(custIdStr);
-            List<CustomerOrderViewingResponse> customerOrderViewingResponses = orderService.getAllCompletedOrder(custId);
-            objectMapper.writeValue(res.getWriter(),customerOrderViewingResponses);
-        }catch(SQLException e){
+            List<CustomerOrderViewingResponse> customerOrderViewingResponses =
+                    orderService.getAllCompletedOrder(custId);
+
+            res.setStatus(HttpServletResponse.SC_OK);
+            objectMapper.writeValue(
+                    res.getWriter(),
+                    customerOrderViewingResponses
+            );
+
+        } catch (SQLException e) {
             e.printStackTrace();
             sendError(
                     res,
@@ -227,23 +226,24 @@ public class CustomerServlet extends HttpServlet {
         }
     }
 
-    public void getAllCurrentOrders(HttpServletRequest req,HttpServletResponse res) throws IOException{
-        try{
-            String custIdStr = req.getParameter("customerId");
+    public void getAllCurrentOrders(
+            HttpServletRequest req,
+            HttpServletResponse res
+    ) throws IOException {
 
-            if (custIdStr == null) {
-                sendError(
-                        res,
-                        HttpServletResponse.SC_BAD_REQUEST,
-                        "customerId not provided"
-                );
-                return;
-            }
+        try {
+            int custId = getAuthenticatedUserId(req);
 
-            int custId = Integer.parseInt(custIdStr);
-            List<CustomerOrderViewingResponse> customerOrderViewingResponses = orderService.getAllCurrentOrders(custId);
-            objectMapper.writeValue(res.getWriter(),customerOrderViewingResponses);
-        }catch(SQLException e){
+            List<CustomerOrderViewingResponse> customerOrderViewingResponses =
+                    orderService.getAllCurrentOrders(custId);
+
+            res.setStatus(HttpServletResponse.SC_OK);
+            objectMapper.writeValue(
+                    res.getWriter(),
+                    customerOrderViewingResponses
+            );
+
+        } catch (SQLException e) {
             e.printStackTrace();
             sendError(
                     res,
@@ -252,11 +252,23 @@ public class CustomerServlet extends HttpServlet {
             );
         }
     }
+
+    private int getAuthenticatedUserId(HttpServletRequest req) {
+        Object userId = req.getAttribute("userId");
+
+        if (userId == null) {
+            throw new IllegalStateException("Authenticated user ID not found");
+        }
+
+        return (Integer) userId;
+    }
+
     private void sendError(
             HttpServletResponse res,
             int status,
             String message
     ) throws IOException {
+
         res.setStatus(status);
         objectMapper.writeValue(
                 res.getWriter(),
@@ -265,6 +277,7 @@ public class CustomerServlet extends HttpServlet {
     }
 
     public static class MessageResponse {
+
         private final String message;
 
         public MessageResponse(String message) {

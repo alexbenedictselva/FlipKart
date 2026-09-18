@@ -28,20 +28,18 @@ public class OrderServlet extends HttpServlet {
         setJsonResponse(res);
 
         try {
-            String customerIdParameter =
-                    req.getParameter("customerId");
+            Object userId = req.getAttribute("userId");
 
-            if (customerIdParameter == null) {
+            if (userId == null) {
                 sendError(
                         res,
-                        HttpServletResponse.SC_BAD_REQUEST,
-                        "customerId is required"
+                        HttpServletResponse.SC_UNAUTHORIZED,
+                        "User authentication required"
                 );
                 return;
             }
 
-            int customerId =
-                    Integer.parseInt(customerIdParameter);
+            int customerId = (Integer) userId;
 
             List<OrderItemsRequest> orderItems =
                     objectMapper.readValue(
@@ -78,14 +76,6 @@ public class OrderServlet extends HttpServlet {
                             "message",
                             "Order created successfully"
                     )
-            );
-
-        } catch (NumberFormatException e) {
-
-            sendError(
-                    res,
-                    HttpServletResponse.SC_BAD_REQUEST,
-                    "customerId must be a valid number"
             );
 
         } catch (IllegalArgumentException e) {

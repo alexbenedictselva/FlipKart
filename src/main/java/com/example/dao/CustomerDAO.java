@@ -35,32 +35,86 @@ public class CustomerDAO {
             throws SQLException {
 
         String sql = """
-                SELECT Name, UserId, PhNo, Password
-                FROM Users
-                WHERE PhNo = ? AND Role = 'CUSTOMER'
-                """;
+            SELECT UserId, Name, PhNo, Password, Role
+            FROM Users
+            WHERE PhNo = ?
+            """;
 
         try (
-                Connection connection = DatabaseConnection.getConnection();
-                PreparedStatement statement = connection.prepareStatement(sql)
+                Connection connection =
+                        DatabaseConnection.getConnection();
+
+                PreparedStatement statement =
+                        connection.prepareStatement(sql)
         ) {
+
             statement.setString(1, phoneNumber);
 
-            try (ResultSet resultSet = statement.executeQuery()) {
+            try (
+                    ResultSet resultSet =
+                            statement.executeQuery()
+            ) {
+
                 if (!resultSet.next()) {
                     return null;
                 }
 
                 Customer customer = new Customer();
-                customer.setName(resultSet.getString("Name"));
-                customer.setCustId(resultSet.getInt("UserId"));
-                customer.setPhNo(resultSet.getString("PhNo"));
-                customer.setPassword(resultSet.getString("Password"));
+
+                customer.setCustId(
+                        resultSet.getInt("UserId")
+                );
+
+                customer.setName(
+                        resultSet.getString("Name")
+                );
+
+                customer.setPhNo(
+                        resultSet.getString("PhNo")
+                );
+
+                customer.setPassword(
+                        resultSet.getString("Password")
+                );
+
+                customer.setRole(
+                        resultSet.getString("Role")
+                );
 
                 return customer;
             }
         }
     }
+//    public Customer findByPhoneNumber(String phoneNumber)
+//            throws SQLException {
+//
+//        String sql = """
+//                SELECT Name, UserId, PhNo, Password
+//                FROM Users
+//                WHERE PhNo = ? AND Role = 'CUSTOMER'
+//                """;
+//
+//        try (
+//                Connection connection = DatabaseConnection.getConnection();
+//                PreparedStatement statement = connection.prepareStatement(sql)
+//        ) {
+//            statement.setString(1, phoneNumber);
+//
+//            try (ResultSet resultSet = statement.executeQuery()) {
+//                if (!resultSet.next()) {
+//                    return null;
+//                }
+//
+//                Customer customer = new Customer();
+//                customer.setName(resultSet.getString("Name"));
+//                customer.setCustId(resultSet.getInt("UserId"));
+//                customer.setPhNo(resultSet.getString("PhNo"));
+//                customer.setPassword(resultSet.getString("Password"));
+//
+//                return customer;
+//            }
+//        }
+//    }
 
     public boolean existsByPhoneNumber(String phoneNumber)
             throws SQLException {

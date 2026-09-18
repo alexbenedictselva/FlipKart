@@ -19,26 +19,14 @@ public class CartServlet extends HttpServlet {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req,HttpServletResponse res) throws ServletException,IOException{
         setJsonResponse(res);
-
         try{
-            String custIdStr = req.getParameter("customerId");
-            if(custIdStr == null){
-                sendError(res,HttpServletResponse.SC_BAD_REQUEST,"Provide Customer Id");
-                return;
-            }
-            int custId = Integer.parseInt(custIdStr);
+            int custId = getAuthenticatedUserId(req);
             List<ProductInDisplay> productInDisplayList = cartService.getAllCartProducts(custId);
             res.setStatus(HttpServletResponse.SC_OK);
             objectMapper.writeValue(res.getWriter(),productInDisplayList);
-        }catch (NumberFormatException e) {
-            sendError(
-                    res,
-                    HttpServletResponse.SC_BAD_REQUEST,
-                    "Customer ID must be a valid number"
-            );
-        }catch (SQLException e){
+        }catch(SQLException e){
             e.printStackTrace();
             sendError(res,HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Database error");
         }
@@ -47,24 +35,34 @@ public class CartServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req,HttpServletResponse res) throws ServletException,IOException{
         setJsonResponse(res);
-        JsonNode body = objectMapper.readTree(req.getInputStream());
-        int custId = body.get("customerId").asInt();
-        int productInDisId = body.get("productInDisplayId").asInt();
-
         try{
+            int custId = getAuthenticatedUserId(req);
+            JsonNode body = objectMapper.readTree(req.getInputStream());
+
+            if(body.get("productInDisplayId") == null){
+                sendError(res,HttpServletResponse.SC_BAD_REQUEST,"productInDisplayId is required");
+                return;
+            }
+
+            int productInDisId = body.get("productInDisplayId").asInt();
             cartService.AddProduct(custId,productInDisId);
+
             res.setStatus(HttpServletResponse.SC_OK);
             objectMapper.writeValue(res.getWriter(),Map.of("message","Added Successfully!"));
-        }catch (NumberFormatException e) {
-            sendError(
-                    res,
-                    HttpServletResponse.SC_BAD_REQUEST,
-                    "Customer ID must be a valid number"
-            );
-        }catch (SQLException e){
+        }catch(SQLException e){
             e.printStackTrace();
             sendError(res,HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Database error");
         }
+    }
+
+    private int getAuthenticatedUserId(HttpServletRequest req){
+        Object userId = req.getAttribute("userId");
+
+        if(userId == null){
+            throw new IllegalStateException("Authenticated user ID not found");
+        }
+
+        return (Integer)userId;
     }
 
     private void setJsonResponse(HttpServletResponse res){
@@ -72,8 +70,8 @@ public class CartServlet extends HttpServlet {
         res.setContentType("application/json");
     }
 
-    private void sendError(HttpServletResponse res,int status,String messgae) throws IOException {
+    private void sendError(HttpServletResponse res,int status,String message) throws IOException{
         res.setStatus(status);
-        objectMapper.writeValue(res.getWriter(), Map.of("error",messgae));
+        objectMapper.writeValue(res.getWriter(),Map.of("error",message));
     }
 }

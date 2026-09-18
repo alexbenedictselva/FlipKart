@@ -7,6 +7,15 @@ public class Customer {
     private String address;
     private String phNo;
     private String password;
+    private String role;
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 
     public Customer() {
     }
