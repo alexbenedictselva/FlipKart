@@ -56,7 +56,15 @@
                 window.location.replace("customer.html");
                 return;
             }
-            showNotice("Login successful. A dashboard for this role will be available soon.", "success");
+            if (result.role === "VENDOR") {
+                window.location.replace("vendor.html");
+                return;
+            }
+            if (result.role === "DELIVERY_PERSON") {
+                window.location.replace("delivery.html");
+                return;
+            }
+            showNotice("Login successful, but this role does not have a dashboard yet.", "success");
         } catch (error) { showNotice(error.message, "error"); }
         finally { setLoading(loginForm, false); }
     });
@@ -79,8 +87,8 @@
     document.querySelectorAll("[data-show-form]").forEach((button) => button.addEventListener("click", () => showForm(button.dataset.showForm)));
     loginTab.addEventListener("click", () => showForm("login"));
     registerTab.addEventListener("click", () => showForm("register"));
-    document.querySelectorAll("[data-toggle-password]").forEach((button) => button.addEventListener("click", () => {
-        const input = document.getElementById(button.dataset.togglePassword);
+    document.querySelectorAll("[data-toggle-field]").forEach((button) => button.addEventListener("click", () => {
+        const input = document.getElementById(`${button.dataset.toggleField}-password`);
         const visible = input.type === "text";
         input.type = visible ? "password" : "text";
         button.textContent = visible ? "Show" : "Hide";

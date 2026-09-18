@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2874f0">
+    <title>FlipKart | Vendor</title>
+    <link rel="stylesheet" href="assets/css/vendor.css">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="vendor.html">Flip<span>Kart</span></a>
+    <nav aria-label="Vendor navigation">
+        <button class="nav-link active" data-view="products" type="button">My products</button>
+        <button class="nav-link" data-view="orders" type="button">Product orders</button>
+    </nav>
+    <button id="logout" class="logout" type="button">Log out</button>
+</header>
+<main class="page">
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <section id="products-view" class="view">
+        <div class="page-heading">
+            <div><p class="eyebrow">VENDOR CATALOGUE</p><h1>Manage your products</h1><p>Post listings and keep price and stock up to date.</p></div>
+        </div>
+        <form id="new-product-form" class="product-form">
+            <h2>Post a new product</h2>
+            <div class="form-grid">
+                <label>Product<select id="product-category" name="productId" required disabled>
+                    <option value="">Loading products...</option>
+                </select></label>
+                <label>Price<input name="price" type="number" min="0.01" step="0.01" required placeholder="0.00"></label>
+                <label>Quantity<input name="quantity" type="number" min="1" required placeholder="0"></label>
+                <button class="primary-button" type="submit">Post product</button>
+            </div>
+        </form>
+        <div id="products" class="product-grid" aria-live="polite"></div>
+    </section>
+    <section id="orders-view" class="view" hidden>
+        <div class="page-heading">
+            <div><p class="eyebrow">CUSTOMER ORDERS</p><h1>Orders for your products</h1><p>Review every order that includes one of your listings.</p></div>
+        </div>
+        <div id="orders" class="orders" aria-live="polite"></div>
+    </section>
+</main>
+<script src="assets/js/vendor.js"></script>
+</body>
+</html>

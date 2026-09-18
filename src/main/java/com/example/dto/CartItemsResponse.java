@@ -2,7 +2,22 @@ package com.example.dto;
 
 public class CartItemsResponse {
     int productInDisplayId;
+    int cartItemId;
     String name;
+
+    public CartItemsResponse(int productInDisplayId, int cartItemId, String name) {
+        this.productInDisplayId = productInDisplayId;
+        this.cartItemId = cartItemId;
+        this.name = name;
+    }
+
+    public int getCartItemId() {
+        return cartItemId;
+    }
+
+    public void setCartItemId(int cartItemId) {
+        this.cartItemId = cartItemId;
+    }
 
     public CartItemsResponse() {
     }

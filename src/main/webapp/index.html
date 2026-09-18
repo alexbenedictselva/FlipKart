@@ -22,7 +22,6 @@
             <div><span>✓</span> Checkout with confidence</div>
         </div>
     </section>
-
     <section class="form-panel">
         <div class="form-shell">
             <div class="mobile-brand">Flip<span>Kart</span></div>
@@ -30,9 +29,7 @@
                 <button class="tab is-active" id="login-tab" type="button" role="tab" aria-selected="true" aria-controls="login-form">Log in</button>
                 <button class="tab" id="register-tab" type="button" role="tab" aria-selected="false" aria-controls="register-form">Create account</button>
             </div>
-
             <div id="notice" class="notice" role="alert" aria-live="polite" hidden></div>
-
             <form id="login-form" class="auth-form" novalidate>
                 <div class="heading"><h2>Welcome back</h2><p>Log in to continue shopping.</p></div>
                 <label for="login-phone">Phone number</label>
@@ -40,12 +37,11 @@
                 <label for="login-password">Password</label>
                 <div class="password-field">
                     <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required>
-                    <button class="show-password" type="button" data-toggle-password="login-password" aria-label="Show password">Show</button>
+                    <button class="show-password" type="button" data-toggle-field="login" aria-label="Show password">Show</button>
                 </div>
                 <button class="submit-button" type="submit">Log in <span aria-hidden="true">→</span></button>
                 <p class="switch-copy">New to FlipKart? <button class="text-button" type="button" data-show-form="register">Create an account</button></p>
             </form>
-
             <form id="register-form" class="auth-form" novalidate hidden>
                 <div class="heading"><h2>Create your account</h2><p>Join FlipKart and start shopping today.</p></div>
                 <label for="register-name">Full name</label>
@@ -57,7 +53,7 @@
                 <label for="register-password">Password</label>
                 <div class="password-field">
                     <input id="register-password" name="password" type="password" autocomplete="new-password" minlength="6" placeholder="Create a password (at least 6 characters)" required>
-                    <button class="show-password" type="button" data-toggle-password="register-password" aria-label="Show password">Show</button>
+                    <button class="show-password" type="button" data-toggle-field="register" aria-label="Show password">Show</button>
                 </div>
                 <button class="submit-button" type="submit">Create account <span aria-hidden="true">→</span></button>
                 <p class="switch-copy">Already have an account? <button class="text-button" type="button" data-show-form="login">Log in</button></p>

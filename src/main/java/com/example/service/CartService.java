@@ -23,4 +23,12 @@ public class CartService {
 
         return cartDAO.AddToCart(custId,productInDisId);
     }
+    public void deleteCartItem(int cartItemId) throws SQLException {
+
+        if (cartItemId <= 0) {
+            throw new IllegalArgumentException("Invalid CartItemId");
+        }
+
+        cartDAO.deleteCartItem(cartItemId);
+    }
 }

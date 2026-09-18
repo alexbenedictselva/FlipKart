@@ -119,11 +119,24 @@ public class CartDAO {
                     int productInDisp = resultSet.getInt("ProductInDisplayId");
                     cartItemsResponse.setName(productInDisplayDAO.getProductName(productInDisplayDAO.getProductIdFromProdInDisId(productInDisp)));
                     cartItemsResponse.setProductInDisplayId(productInDisp);
+                    cartItemsResponse.setCartItemId(resultSet.getInt("CartItemId"));
                     cartItems.add(cartItemsResponse);
                 }
             }
         }
         return cartItems;
+    }
+    public void deleteCartItem(int cartItemId) throws SQLException{
+        String sql = """
+                DELETE FROM CartItem
+                WHERE CartItemId = ?""";
+        try(
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+        ){
+            statement.setInt(1,cartItemId);
+            int deletedRows = statement.executeUpdate();
+        }
     }
 
 }

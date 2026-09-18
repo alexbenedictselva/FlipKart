@@ -77,6 +77,8 @@ public class AuthenticationFilter implements Filter {
         return resourcePath.equals("/")
                 || resourcePath.equals("/index.html")
                 || resourcePath.equals("/customer.html")
+                || resourcePath.equals("/vendor.html")
+                || resourcePath.equals("/delivery.html")
                 || resourcePath.startsWith("/assets/")
                 || resourcePath.equals("/user/login")
                 || resourcePath.equals("/user/register");

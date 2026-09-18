@@ -3,6 +3,7 @@ package com.example.servlet;
 import com.example.dto.CustomProductsResponse;
 import com.example.dto.ProductInDisplayUpdateRequest;
 import com.example.dto.VendorOrdersResponse;
+import com.example.model.Product;
 import com.example.model.ProductInDisplay;
 import com.example.service.ProductInDisplayService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -98,12 +99,29 @@ public class VendorServlet extends HttpServlet {
         }
 
         switch (path) {
+            case "/getAllProductCategories" -> getAllAvailableCategories(req,res);
             case "/GetAllVendorOrders" -> getAllVendorOrders(req, res);
             case "/" -> getAllVendorProducts(req, res);
             default -> sendError(
                     res,
                     HttpServletResponse.SC_NOT_FOUND,
                     "Endpoint not found"
+            );
+        }
+    }
+    private void getAllAvailableCategories(HttpServletRequest req,HttpServletResponse res) throws IOException{
+        try {
+            List<Product> products = service.getAllProducts();
+
+            res.setStatus(HttpServletResponse.SC_OK);
+            objectMapper.writeValue(res.getWriter(), products);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sendError(
+                    res,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Database error"
             );
         }
     }

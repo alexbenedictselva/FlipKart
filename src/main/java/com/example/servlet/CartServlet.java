@@ -75,4 +75,42 @@ public class CartServlet extends HttpServlet {
         res.setStatus(status);
         objectMapper.writeValue(res.getWriter(),Map.of("error",message));
     }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
+        String cartItemIdParam = req.getParameter("CartItemId");
+
+        if (cartItemIdParam == null || cartItemIdParam.isBlank()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("CartItemId is required");
+            return;
+        }
+
+        try {
+
+            int cartItemId = Integer.parseInt(cartItemIdParam);
+
+            cartService.deleteCartItem(cartItemId);
+
+            resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            objectMapper.writeValue(resp.getWriter(),Map.of("message","Deleted Successfully"));
+
+        } catch (NumberFormatException e) {
+
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("CartItemId must be a number");
+
+        } catch (IllegalArgumentException e) {
+
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write(e.getMessage());
+
+        } catch (SQLException e) {
+
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("Failed to delete cart item");
+        }
+    }
 }

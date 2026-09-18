@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2874f0">
+    <title>FlipKart | Deliveries</title>
+    <link rel="stylesheet" href="assets/css/delivery.css">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="delivery.html">Flip<span>Kart</span></a>
+    <div class="role-label">Delivery partner</div>
+    <button id="logout" class="logout" type="button">Log out</button>
+</header>
+<main class="page">
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <div class="page-heading">
+        <div><p class="eyebrow">ASSIGNED DELIVERIES</p><h1>Your delivery route</h1><p>Update each assigned delivery as it moves to the customer.</p></div>
+        <button id="refresh" class="secondary-button" type="button">Refresh</button>
+    </div>
+    <section id="deliveries" class="delivery-grid" aria-live="polite"></section>
+</main>
+<script src="assets/js/delivery.js"></script>
+</body>
+</html>
