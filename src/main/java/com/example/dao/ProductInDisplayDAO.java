@@ -2,6 +2,7 @@ package com.example.dao;
 
 import com.example.database.DatabaseConnection;
 import com.example.dto.CustomProductsResponse;
+import com.example.model.Product;
 import com.example.model.ProductInDisplay;
 
 import java.sql.Connection;
@@ -34,6 +35,27 @@ public class ProductInDisplayDAO {
         }
     }
 
+    public List<Product> getAllProductCategories() throws SQLException{
+        String sql = """
+                SELECT * FROM Product
+                """;
+        List<Product> products = new ArrayList<>();
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ){
+            try(ResultSet resultSet = statement.executeQuery()){
+                while(resultSet.next()){
+                    Product product = new Product();
+                    product.setProductId(resultSet.getInt("ProductId"));
+                    product.setName(resultSet.getString("Name"));
+                    product.setDescription(resultSet.getString("Description"));
+                    products.add(product);
+                }
+            }
+        }
+        return products;
+    }
     public List<CustomProductsResponse> findByVendorId(int vendorId)
             throws SQLException {
 
@@ -59,6 +81,7 @@ public class ProductInDisplayDAO {
 
                     String productName = getProductName(resultSet.getInt("ProductId"));
                     listing.setProductInDisplayId(resultSet.getInt("ProductInDisplayId"));
+                    listing.setVendorId(vendorId);
                     listing.setProductName(productName);
                     listing.setVendorName(getVendorName(vendorId));
                     listing.setQuantity(
@@ -90,6 +113,7 @@ public class ProductInDisplayDAO {
                 while(resultSet.next()){
                     CustomProductsResponse customProductsResponse = new CustomProductsResponse();
                     customProductsResponse.setProductInDisplayId(resultSet.getInt("ProductInDisplayId"));
+                    customProductsResponse.setVendorId(resultSet.getInt("VendorId"));
                     customProductsResponse.setPrice(resultSet.getInt("Price"));
                     customProductsResponse.setQuantity(resultSet.getInt("Quantity"));
                     String name = getProductName(resultSet.getInt("ProductId"));

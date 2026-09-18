@@ -2,6 +2,7 @@ package com.example.servlet;
 
 import com.example.dto.*;
 import com.example.model.Customer;
+import com.example.model.Product;
 import com.example.security.JwtUtil;
 import com.example.service.CustomerService;
 import com.example.service.OrderService;
@@ -37,6 +38,7 @@ public class CustomerServlet extends HttpServlet {
         switch (path) {
             case "/register" -> register(req, res);
             case "/login" -> login(req, res);
+
             default -> sendError(res, HttpServletResponse.SC_NOT_FOUND, "Endpoint not found");
         }
     }
@@ -52,14 +54,21 @@ public class CustomerServlet extends HttpServlet {
         }
 
         switch (path) {
-            case "/products" -> displayAllProducts(req, res);
+            case "/products" -> getProducts(req, res);
             case "/orders" -> getAllOrders(req, res);
             case "/orderHistory" -> getAllDeliveredOrders(req, res);
-            case "/currentOrders" -> getAllCurrentOrders(req, res);
+            case "/getAllProductCategory" -> getAllProductCategory(req, res);
+            case "/currentOrders", "/currentOrder" -> getAllCurrentOrders(req, res);
             default -> sendError(res, HttpServletResponse.SC_NOT_FOUND, "Endpoint not found");
         }
     }
 
+    private void getAllProductCategory(
+            HttpServletRequest req,
+            HttpServletResponse res
+    ) throws IOException {
+        getAllProducts(res);
+    }
     private void register(HttpServletRequest req, HttpServletResponse res) throws IOException {
         try {
             CustomerRegisterRequest request = objectMapper.readValue(
@@ -132,19 +141,44 @@ public class CustomerServlet extends HttpServlet {
         }
     }
 
-    private void displayAllProducts(HttpServletRequest req, HttpServletResponse res) throws IOException {
+    /**
+     * Returns the product catalogue when no product ID is supplied. When a
+     * customer selects a product, the same endpoint returns that product's
+     * listings from all vendors.
+     */
+    private void getProducts(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        String productIdParameter = req.getParameter("productId");
+
+        if (productIdParameter == null || productIdParameter.isBlank()) {
+            getAllProducts(res);
+            return;
+        }
+
+        displayAllProducts(productIdParameter, res);
+    }
+
+    private void getAllProducts(HttpServletResponse res) throws IOException {
         try {
-            String productIdParameter = req.getParameter("productId");
+            List<Product> products = productInDisplayService.getAllProducts();
 
-            if (productIdParameter == null) {
-                sendError(
-                        res,
-                        HttpServletResponse.SC_BAD_REQUEST,
-                        "ProductId not provided"
-                );
-                return;
-            }
+            res.setStatus(HttpServletResponse.SC_OK);
+            objectMapper.writeValue(res.getWriter(), products);
 
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sendError(
+                    res,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Database error"
+            );
+        }
+    }
+
+    private void displayAllProducts(
+            String productIdParameter,
+            HttpServletResponse res
+    ) throws IOException {
+        try {
             int productId = Integer.parseInt(productIdParameter);
 
             List<CustomProductsResponse> productInDisplays =

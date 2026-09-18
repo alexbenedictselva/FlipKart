@@ -2,6 +2,7 @@ package com.example.dto;
 
 public class CustomProductsResponse {
     int productInDisplayId;
+    int vendorId;
     String productName;
     String vendorName;
     double price;
@@ -13,6 +14,14 @@ public class CustomProductsResponse {
 
     public void setProductInDisplayId(int productInDisplayId) {
         this.productInDisplayId = productInDisplayId;
+    }
+
+    public int getVendorId() {
+        return vendorId;
+    }
+
+    public void setVendorId(int vendorId) {
+        this.vendorId = vendorId;
     }
 
     public CustomProductsResponse(int productInDisplayId, String productName, String vendorName, double price, int quantity) {

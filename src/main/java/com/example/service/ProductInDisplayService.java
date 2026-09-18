@@ -4,6 +4,7 @@ import com.example.dao.OrderDAO;
 import com.example.dao.ProductInDisplayDAO;
 import com.example.dto.VendorOrdersResponse;
 import com.example.dto.CustomProductsResponse;
+import com.example.model.Product;
 import com.example.model.ProductInDisplay;
 
 import java.sql.SQLException;
@@ -105,7 +106,9 @@ public class ProductInDisplayService {
         return orderDAO.getAllOrderOfVendor(vendorId);
     }
 
-
+    public List<Product> getAllProducts() throws SQLException{
+        return dao.getAllProductCategories();
+    }
 
     private void validateProductId(int productId) {
         if (productId <= 0) {

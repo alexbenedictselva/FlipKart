@@ -101,6 +101,7 @@ public class ProductInDisplayServlet extends HttpServlet {
             return;
         }
 
+
         try {
             int vendorId = getAuthenticatedUserId(req);
 

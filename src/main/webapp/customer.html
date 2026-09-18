@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2874f0">
+    <title>FlipKart | Shop</title>
+    <link rel="stylesheet" href="assets/css/customer.css">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="customer.html">Flip<span>Kart</span></a>
+    <nav aria-label="Customer navigation">
+        <button class="nav-link active" data-view="shop">Shop</button>
+        <button class="nav-link" data-view="cart">Cart <span id="cart-count" class="count">0</span></button>
+        <button class="nav-link" data-view="current">Current orders</button>
+        <button class="nav-link" data-view="history">Order history</button>
+    </nav>
+    <button id="logout" class="logout" type="button">Log out</button>
+</header>
+<main class="page">
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <section id="shop-view" class="view">
+        <div class="page-heading"><div><p class="eyebrow">CATALOGUE</p><h1>What are you looking for?</h1><p>Select a category to compare offerings from different sellers.</p></div></div>
+        <div id="categories" class="category-grid" aria-live="polite"></div>
+        <section id="listings-section" class="listings-section" hidden>
+            <div class="section-heading"><div><p class="eyebrow">AVAILABLE LISTINGS</p><h2 id="selected-category">Products</h2></div><button id="back-to-categories" class="quiet-button" type="button">← All categories</button></div>
+            <div id="listings" class="listing-grid" aria-live="polite"></div>
+        </section>
+    </section>
+    <section id="cart-view" class="view" hidden>
+        <div class="page-heading"><div><p class="eyebrow">YOUR CART</p><h1>Ready when you are.</h1><p>Review your saved items, then place your order.</p></div><button id="place-order" class="primary-button" type="button">Place order</button></div>
+        <div id="cart-items" class="stack" aria-live="polite"></div>
+        <p id="cart-help" class="subtle" hidden>To order an item added in an earlier session, select its category again so FlipKart can confirm the seller.</p>
+    </section>
+    <section id="current-view" class="view" hidden>
+        <div class="page-heading"><div><p class="eyebrow">ON THE WAY</p><h1>Current orders</h1><p>Follow items that are still being prepared or delivered.</p></div></div>
+        <div id="current-orders" class="orders" aria-live="polite"></div>
+    </section>
+    <section id="history-view" class="view" hidden>
+        <div class="page-heading"><div><p class="eyebrow">PAST PURCHASES</p><h1>Order history</h1><p>Everything that has been delivered to you.</p></div></div>
+        <div id="history-orders" class="orders" aria-live="polite"></div>
+    </section>
+</main>
+<script src="assets/js/customer.js"></script>
+</body>
+</html>

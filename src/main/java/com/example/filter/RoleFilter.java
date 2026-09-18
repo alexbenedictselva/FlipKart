@@ -25,7 +25,7 @@ public class RoleFilter implements Filter {
         String path = req.getRequestURI();
         String role = (String) req.getAttribute("role");
 
-        if (path.endsWith("/user/login") || path.endsWith("/user/register")) {
+        if (isPublicPath(req)) {
             chain.doFilter(request, response);
             return;
         }
@@ -61,6 +61,21 @@ public class RoleFilter implements Filter {
         }
 
         chain.doFilter(request, response);
+    }
+
+    private boolean isPublicPath(HttpServletRequest req) {
+        String path = req.getRequestURI();
+        String contextPath = req.getContextPath();
+        String resourcePath = path.startsWith(contextPath)
+                ? path.substring(contextPath.length())
+                : path;
+
+        return resourcePath.equals("/")
+                || resourcePath.equals("/index.html")
+                || resourcePath.equals("/customer.html")
+                || resourcePath.startsWith("/assets/")
+                || resourcePath.equals("/user/login")
+                || resourcePath.equals("/user/register");
     }
 
     private void sendError(
