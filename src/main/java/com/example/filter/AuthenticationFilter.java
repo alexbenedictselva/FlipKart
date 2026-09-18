@@ -76,6 +76,7 @@ public class AuthenticationFilter implements Filter {
 
         res.setStatus(status);
         res.setContentType("application/json");
+        res.setCharacterEncoding("UTF-8");
 
         res.getWriter().write(
                 "{\"error\":\"" + message + "\"}"

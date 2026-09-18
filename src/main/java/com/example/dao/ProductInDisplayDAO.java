@@ -58,6 +58,7 @@ public class ProductInDisplayDAO {
                     CustomProductsResponse listing = new CustomProductsResponse();
 
                     String productName = getProductName(resultSet.getInt("ProductId"));
+                    listing.setProductInDisplayId(resultSet.getInt("ProductInDisplayId"));
                     listing.setProductName(productName);
                     listing.setVendorName(getVendorName(vendorId));
                     listing.setQuantity(
@@ -88,6 +89,7 @@ public class ProductInDisplayDAO {
             try(ResultSet resultSet = statement.executeQuery()){
                 while(resultSet.next()){
                     CustomProductsResponse customProductsResponse = new CustomProductsResponse();
+                    customProductsResponse.setProductInDisplayId(resultSet.getInt("ProductInDisplayId"));
                     customProductsResponse.setPrice(resultSet.getInt("Price"));
                     customProductsResponse.setQuantity(resultSet.getInt("Quantity"));
                     String name = getProductName(resultSet.getInt("ProductId"));

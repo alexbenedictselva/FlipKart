@@ -46,9 +46,19 @@
 
     </servlet>
     <servlet>
+
+        <servlet-name>DeliveryServlet</servlet-name>
+
+        <servlet-class>
+            com.example.servlet.DeliveryServlet
+        </servlet-class>
+
+    </servlet>
+    <servlet>
         <servlet-name>CartServlet</servlet-name>
         <servlet-class>com.example.servlet.CartServlet</servlet-class>
     </servlet>
+
     <servlet>
         <servlet-name>OrderServlet</servlet-name>
         <servlet-class>com.example.servlet.OrderServlet</servlet-class>
@@ -60,6 +70,13 @@
         <servlet-name>VendorServlet</servlet-name>
 
         <url-pattern>/vendor/products/*</url-pattern>
+
+    </servlet-mapping>
+    <servlet-mapping>
+
+        <servlet-name>DeliveryServlet</servlet-name>
+
+        <url-pattern>/deliveryPartner/*</url-pattern>
 
     </servlet-mapping>
     <servlet-mapping>

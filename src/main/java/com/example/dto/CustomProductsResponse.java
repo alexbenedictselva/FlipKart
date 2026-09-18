@@ -1,10 +1,27 @@
 package com.example.dto;
 
 public class CustomProductsResponse {
+    int productInDisplayId;
     String productName;
     String vendorName;
     double price;
     int quantity;
+
+    public int getProductInDisplayId() {
+        return productInDisplayId;
+    }
+
+    public void setProductInDisplayId(int productInDisplayId) {
+        this.productInDisplayId = productInDisplayId;
+    }
+
+    public CustomProductsResponse(int productInDisplayId, String productName, String vendorName, double price, int quantity) {
+        this.productInDisplayId = productInDisplayId;
+        this.productName = productName;
+        this.vendorName = vendorName;
+        this.price = price;
+        this.quantity = quantity;
+    }
 
     public CustomProductsResponse(String productName, String vendorName, double price, int quantity) {
         this.productName = productName;

@@ -1,6 +1,7 @@
 package com.example.dao;
 
 import com.example.database.DatabaseConnection;
+import com.example.dto.CartItemsResponse;
 import com.example.model.Cart;
 import com.example.model.CartItem;
 
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CartDAO {
+    private final ProductInDisplayDAO productInDisplayDAO = new ProductInDisplayDAO();
     public Cart checkExistingCart(int custId) throws SQLException {
         String sql = """
                SELECT * FROM Cart
@@ -100,12 +102,12 @@ public class CartDAO {
             return val == 1;
         }
     }
-    public List<CartItem> viewAllCartItem(int custId) throws SQLException{
+    public List<CartItemsResponse> viewAllCartItem(int custId) throws SQLException{
         Cart cart = checkExistingCart(custId);
         String sql = """
                 SELECT * FROM CartItem
                 WHERE CartId = ?""";
-        List<CartItem> cartItems = new ArrayList<>();
+        List<CartItemsResponse> cartItems = new ArrayList<>();
         try(
                 Connection connection = DatabaseConnection.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql);
@@ -113,18 +115,15 @@ public class CartDAO {
             statement.setInt(1,cart.getCartId());
             try(ResultSet resultSet = statement.executeQuery()){
                 while(resultSet.next()){
-                    CartItem cartItem = new CartItem();
-
-                    cartItem.setCartId(resultSet.getInt("CartId"));
-                    cartItem.setProductInDisplayId(resultSet.getInt("ProductInDisplayId"));
-                    cartItem.setCartItemId(resultSet.getInt("CartItemId"));
-                    cartItem.setCreatedTime(resultSet.getTimestamp("CreatedTime").toLocalDateTime().toLocalDate());
-                    cartItem.setQuantity(resultSet.getInt("Quantity"));
-
-                    cartItems.add(cartItem);
+                    CartItemsResponse cartItemsResponse = new CartItemsResponse();
+                    int productInDisp = resultSet.getInt("ProductInDisplayId");
+                    cartItemsResponse.setName(productInDisplayDAO.getProductName(productInDisplayDAO.getProductIdFromProdInDisId(productInDisp)));
+                    cartItemsResponse.setProductInDisplayId(productInDisp);
+                    cartItems.add(cartItemsResponse);
                 }
             }
         }
         return cartItems;
     }
+
 }

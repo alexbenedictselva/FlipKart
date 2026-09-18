@@ -1,5 +1,6 @@
 package com.example.servlet;
 
+import com.example.dto.CartItemsResponse;
 import com.example.model.ProductInDisplay;
 import com.example.service.CartService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,9 +24,9 @@ public class CartServlet extends HttpServlet {
         setJsonResponse(res);
         try{
             int custId = getAuthenticatedUserId(req);
-            List<ProductInDisplay> productInDisplayList = cartService.getAllCartProducts(custId);
+            List<CartItemsResponse> cartItemsResponses = cartService.getAllCartProducts(custId);
             res.setStatus(HttpServletResponse.SC_OK);
-            objectMapper.writeValue(res.getWriter(),productInDisplayList);
+            objectMapper.writeValue(res.getWriter(),cartItemsResponses);
         }catch(SQLException e){
             e.printStackTrace();
             sendError(res,HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Database error");

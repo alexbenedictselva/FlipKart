@@ -24,7 +24,6 @@ public class RoleFilter implements Filter {
 
         String path = req.getRequestURI();
         String role = (String) req.getAttribute("role");
-        System.out.println(role);
 
         if (path.endsWith("/user/login") || path.endsWith("/user/register")) {
             chain.doFilter(request, response);
@@ -41,13 +40,23 @@ public class RoleFilter implements Filter {
             return;
         }
 
-        if (path.contains("/user/")) {
-            if ("CUSTOMER".equals(role)) {
-                chain.doFilter(request, response);
+        if (path.contains("/deliveryPartner")) {
+            if (!"DELIVERY_PERSON".equals(role)) {
+                sendError(res, HttpServletResponse.SC_FORBIDDEN, "Delivery partner access required");
                 return;
             }
 
-            sendError(res, HttpServletResponse.SC_FORBIDDEN, "Customer access required");
+            chain.doFilter(request, response);
+            return;
+        }
+
+        if (path.contains("/user/")) {
+            if (!"CUSTOMER".equals(role)) {
+                sendError(res, HttpServletResponse.SC_FORBIDDEN, "Customer access required");
+                return;
+            }
+
+            chain.doFilter(request, response);
             return;
         }
 
@@ -63,6 +72,9 @@ public class RoleFilter implements Filter {
         res.setStatus(status);
         res.setContentType("application/json");
         res.setCharacterEncoding("UTF-8");
-        res.getWriter().write("{\"error\":\"" + message + "\"}");
+
+        res.getWriter().write(
+                "{\"error\":\"" + message + "\"}"
+        );
     }
 }
