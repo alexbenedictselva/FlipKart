@@ -15,7 +15,7 @@ public class ProductInDisplayService {
     private final ProductInDisplayDAO dao = new ProductInDisplayDAO();
     private final OrderDAO orderDAO= new OrderDAO();
 
-    public void createProduct(int productId, int vendorId, double price, int quantity)
+    public void createProduct(int productId, int vendorId, double price, int quantity,int variantId)
             throws SQLException {
 
         validateProductId(productId);
@@ -28,6 +28,7 @@ public class ProductInDisplayService {
         listing.setVendorId(vendorId);
         listing.setPrice(price);
         listing.setQuantity(quantity);
+        listing.setVariantId(variantId);
 
         dao.create(listing);
     }

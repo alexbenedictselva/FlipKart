@@ -6,6 +6,7 @@ import com.example.model.Product;
 import com.example.model.ProductInDisplay;
 import com.example.model.Variant;
 
+import javax.print.DocFlavor;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -92,7 +93,8 @@ public class ProductInDisplayDAO {
                     listing.setPrice(
                             resultSet.getDouble("Price")
                     );
-
+                    Variant variant = getVariant(resultSet.getInt("VariantId"));
+                    listing.setVariant(variant);
                     listings.add(listing);
                 }
             }
@@ -103,9 +105,8 @@ public class ProductInDisplayDAO {
 
     public List<CustomProductsResponse> getAllProduct(int productId) throws SQLException{
         String sql = """
-                SELECT pd.ProductId,pd.VendorId,pd.Quantity,pd.Price,pv.SKU,pv.Color,pv.Storage,pv.variantId from productInDisplay as pd JOIN productVariant as pv
-                ON pd.ProductId = pv.ProductId
-                WHERE pd.ProductId = ?""";
+                SELECT * FROM ProductInDisplay 
+                WHERE ProductId = ?""";
         List<CustomProductsResponse> listings = new ArrayList<>();
         try(
                 Connection connection = DatabaseConnection.getConnection();
@@ -121,12 +122,7 @@ public class ProductInDisplayDAO {
                     customProductsResponse.setQuantity(resultSet.getInt("Quantity"));
                     String name = getProductName(resultSet.getInt("ProductId"));
                     customProductsResponse.setProductName(name);
-                    Variant variant = new Variant();
-                    variant.setProductId(resultSet.getInt("ProductId"));
-                    variant.setColor(resultSet.getString("Color"));
-                    variant.setSku(resultSet.getString("SKU"));
-                    variant.setStorage(resultSet.getString("Storage"));
-                    variant.setVariantId(resultSet.getInt("VariantId"));
+                    Variant variant = getVariant(resultSet.getInt("VariantId"));
                     customProductsResponse.setVariant(variant);
                     customProductsResponse.setVendorName(getVendorName(resultSet.getInt("VendorId")));
                     listings.add(customProductsResponse);
@@ -134,6 +130,30 @@ public class ProductInDisplayDAO {
             }
         }
         return listings;
+    }
+    public Variant getVariant(int variantId) throws SQLException{
+        String sql = """
+                SELECT * FROM ProductVariant
+                WHERE VariantId = ?""";
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement =
+                        connection.prepareStatement(sql.toString())
+        ){
+            statement.setInt(1,variantId);
+            try(ResultSet resultSet = statement.executeQuery()){
+                if(resultSet.next()){
+                    Variant variant = new Variant();
+                    variant.setVariantId(resultSet.getInt("VariantId"));
+                    variant.setStorage(resultSet.getString("Storage"));
+                    variant.setProductId(resultSet.getInt("ProductId"));
+                    variant.setSku(resultSet.getString("SKU"));
+                    variant.setColor(resultSet.getString("Color"));
+                    return variant;
+                }
+            }
+        }
+        return null;
     }
 
     public String getVendorName(int vendorid) throws  SQLException{

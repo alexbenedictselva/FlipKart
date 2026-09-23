@@ -57,7 +57,8 @@ public class VendorServlet extends HttpServlet {
                     listing.getProductId(),
                     vendorId,
                     listing.getPrice(),
-                    listing.getQuantity()
+                    listing.getQuantity(),
+                    listing.getVariantId()
             );
 
             res.setStatus(HttpServletResponse.SC_CREATED);

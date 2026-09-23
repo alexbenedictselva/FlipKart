@@ -35,6 +35,16 @@
     function currency(value) {
         return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(value);
     }
+    function renderVariant(variant) {
+        if (!variant) return "";
+        const details = [
+            Number.isFinite(Number(variant.productId)) && `Product ID: ${escape(variant.productId)}`,
+            variant.sku && `SKU: ${escape(variant.sku)}`,
+            variant.color && `Color: ${escape(variant.color)}`,
+            variant.storage && `Storage: ${escape(variant.storage)}`
+        ].filter(Boolean);
+        return `<div class="variant-details"><strong>Variant #${escape(variant.variantId)}</strong>${details.length ? `<span>${details.join(" · ")}</span>` : ""}</div>`;
+    }
     function loading(container) { container.innerHTML = '<div class="empty-state">Loading...</div>'; }
     function empty(container, message) { container.innerHTML = `<div class="empty-state">${escape(message)}</div>`; }
     function saveMetadata() { localStorage.setItem("flipkartListingMetadata", JSON.stringify(listingMetadata)); }
@@ -47,7 +57,7 @@
         const currentAuth = readAuth();
         const headers = new Headers(options.headers);
         headers.set("Accept", "application/json");
-        headers.set(["Author", "ization"].join(""), ["Bearer", currentAuth.token].join(" "));
+        headers.set("Authorization", `Bearer ${currentAuth.token}`);
         if (options.body) headers.set("Content-Type", "application/json");
         const response = await fetch(path, { ...options, headers });
         let data = null;
@@ -98,9 +108,12 @@
                 <article class="listing-card">
                     <h3>${escape(item.productName)}</h3>
                     <p class="vendor">Sold by ${escape(item.vendorName)}</p>
+                    ${renderVariant(item.variant)}
                     <p class="price">${currency(item.price)}</p>
                     <p class="stock">${item.quantity} available</p>
-                    <button class="primary-button full add-cart" type="button" data-listing-id="${item.productInDisplayId}">Add to cart</button>
+                    <button class="primary-button full add-cart" type="button" data-listing-id="${item.productInDisplayId}" ${Number(item.quantity) <= 0 ? "disabled" : ""}>
+                        ${Number(item.quantity) <= 0 ? "Out of stock" : "Add to cart"}
+                    </button>
                 </article>`).join("");
         } catch (error) { empty(el.listings, error.message); }
     }
@@ -166,7 +179,11 @@
                         <input class="cart-select" type="checkbox" data-cart-id="${item.productInDisplayId}"
                             ${selectedCartIds.has(item.productInDisplayId) ? "checked" : ""} aria-label="Select ${escape(item.name)}">
                     </label>
-                    <div><h3>${escape(item.name)}</h3><p>Saved for your next order</p></div>
+                    <div>
+                        <h3>${escape(item.name)}</h3>
+                        ${renderVariant(listingMetadata[item.productInDisplayId]?.variant)}
+                        <p>Saved for your next order</p>
+                    </div>
                     <div class="quantity-controls" ${selectedCartIds.has(item.productInDisplayId) ? "" : "hidden"}>
                         <button class="quantity-button decrease-quantity" type="button" data-cart-id="${item.productInDisplayId}" aria-label="Decrease quantity">−</button>
                         <output class="quantity-value">${cartQuantities.get(item.productInDisplayId) || 1}</output>

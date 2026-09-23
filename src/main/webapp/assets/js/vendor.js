@@ -23,6 +23,15 @@
     function currency(value) {
         return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(value);
     }
+    function renderVariant(variant) {
+        if (!variant) return "";
+        const details = [
+            variant.sku && `SKU: ${escape(variant.sku)}`,
+            variant.color && `Color: ${escape(variant.color)}`,
+            variant.storage && `Storage: ${escape(variant.storage)}`
+        ].filter(Boolean);
+        return `<div class="variant-details"><strong>Variant #${escape(variant.variantId)}</strong>${details.length ? `<span>${details.join(" · ")}</span>` : ""}</div>`;
+    }
     function loading(container) { container.innerHTML = '<div class="empty-state">Loading...</div>'; }
     function empty(container, message) { container.innerHTML = `<div class="empty-state">${escape(message)}</div>`; }
     function toast(message, type = "success") {
@@ -61,7 +70,7 @@
         products.innerHTML = items.map((item) => `
             <article class="product-card" data-product-id="${item.productInDisplayId}">
                 <div class="card-heading">
-                    <div><p class="eyebrow">LISTING #${item.productInDisplayId}</p><h2>${escape(item.productName)}</h2><p class="vendor-name">Sold by ${escape(item.vendorName)}</p></div>
+                    <div><p class="eyebrow">LISTING #${item.productInDisplayId}</p><h2>${escape(item.productName)}</h2><p class="vendor-name">Sold by ${escape(item.vendorName)}</p>${renderVariant(item.variant)}</div>
                     <button class="danger-button delete-product" type="button" data-product-id="${item.productInDisplayId}">Delete</button>
                 </div>
                 <div class="edit-grid">
@@ -119,12 +128,15 @@
         setLoading(button, true, "Post product");
         try {
             const data = Object.fromEntries(new FormData(newProductForm));
+            const currentAuth = readJson("flipkartAuth", null);
             await api("vendor/products", {
                 method: "POST",
                 body: JSON.stringify({
                     productId: Number(data.productId),
+                    vendorId: Number(currentAuth.userId),
                     price: Number(data.price),
-                    quantity: Number(data.quantity)
+                    quantity: Number(data.quantity),
+                    variantId: Number(data.variantId)
                 })
             });
             newProductForm.reset();
