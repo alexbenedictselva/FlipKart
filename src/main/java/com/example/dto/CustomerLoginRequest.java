@@ -4,6 +4,21 @@ public class CustomerLoginRequest {
 
     private String phNo;
     private String password;
+    private String role;
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public CustomerLoginRequest(String phNo, String password, String role) {
+        this.phNo = phNo;
+        this.password = password;
+        this.role = role;
+    }
 
     public CustomerLoginRequest() {
     }

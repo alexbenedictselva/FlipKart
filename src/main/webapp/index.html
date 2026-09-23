@@ -32,6 +32,13 @@
             <div id="notice" class="notice" role="alert" aria-live="polite" hidden></div>
             <form id="login-form" class="auth-form" novalidate>
                 <div class="heading"><h2>Welcome back</h2><p>Log in to continue shopping.</p></div>
+                <label for="login-role">Login as</label>
+                <select id="login-role" name="role" required>
+                    <option value="">Select your role</option>
+                    <option value="CUSTOMER">Customer</option>
+                    <option value="VENDOR">Vendor</option>
+                    <option value="DELIVERYPARTNER">Delivery partner</option>
+                </select>
                 <label for="login-phone">Phone number</label>
                 <input id="login-phone" name="phNo" type="tel" inputmode="numeric" autocomplete="tel" placeholder="Enter your phone number" required>
                 <label for="login-password">Password</label>
@@ -61,6 +68,6 @@
         </div>
     </section>
 </main>
-<script src="assets/js/auth.js"></script>
+<script src="assets/js/auth.js?v=20260922-2"></script>
 </body>
 </html>

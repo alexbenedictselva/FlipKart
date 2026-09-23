@@ -81,7 +81,8 @@ public class AuthenticationFilter implements Filter {
                 || resourcePath.equals("/delivery.html")
                 || resourcePath.startsWith("/assets/")
                 || resourcePath.equals("/user/login")
-                || resourcePath.equals("/user/register");
+                || resourcePath.equals("/user/register")
+        || resourcePath.equals("user/registerAsUser");
     }
 
     private void sendError(

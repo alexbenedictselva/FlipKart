@@ -41,7 +41,11 @@ public class RoleFilter implements Filter {
         }
 
         if (path.contains("/deliveryPartner")) {
-            if (!"DELIVERY_PERSON".equals(role)) {
+            String normalizedRole = role == null
+                    ? ""
+                    : role.toUpperCase().replaceAll("[_\\s-]", "");
+            if (!"DELIVERYPARTNER".equals(normalizedRole)
+                    && !"DELIVERYPERSON".equals(normalizedRole)) {
                 sendError(res, HttpServletResponse.SC_FORBIDDEN, "Delivery partner access required");
                 return;
             }
@@ -77,7 +81,8 @@ public class RoleFilter implements Filter {
                 || resourcePath.equals("/delivery.html")
                 || resourcePath.startsWith("/assets/")
                 || resourcePath.equals("/user/login")
-                || resourcePath.equals("/user/register");
+                || resourcePath.equals("/user/register")
+                || resourcePath.equals("/user/registerAsUser");
     }
 
     private void sendError(

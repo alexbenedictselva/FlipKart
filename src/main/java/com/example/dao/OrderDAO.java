@@ -205,7 +205,7 @@ public class OrderDAO {
 
                         if (deliveryPartnerId == 0) {
                             throw new SQLException(
-                                    "No delivery partner available"
+                                    "No user with role DELIVERY_PERSON is available"
                             );
                         }
 
@@ -347,7 +347,6 @@ public class OrderDAO {
         return vendorOrder;
     }
 
-
     public List<CustomerOrderViewingResponse> getAllCustomerOrders(int custId) throws SQLException{
         String sql = """
                 SELECT * FROM `Order`
@@ -390,7 +389,6 @@ public class OrderDAO {
                     String productName = productInDisplayDAO.getProductName(productInDisplayDAO.getProductIdFromProdInDisId(resultSet.getInt("ProductInDisplayId")));
                     customerOrderItemViewing.setProductName(productName);
                     customerOrderItemViewing.setQuantity(resultSet.getInt("Quantity"));
-//                    DeliveryStatus deliveryStatus = ;
                     customerOrderItemViewing.setStatus(DeliveryStatus.valueOf(deliveryDAO.getDelivery(resultSet.getInt("DeliveryId")).getDeliveryStatus()));
                     customerOrderItemViewing.setVendorName(productInDisplayDAO.getVendorNameFromProductInDisplayId(resultSet.getInt("ProductInDisplayId"))); //have to work
                     customerOrderItemViewings.add(customerOrderItemViewing);

@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
 
 public class CustomerServlet extends HttpServlet {
 
@@ -59,6 +60,7 @@ public class CustomerServlet extends HttpServlet {
             case "/orderHistory" -> getAllDeliveredOrders(req, res);
             case "/getAllProductCategory" -> getAllProductCategory(req, res);
             case "/currentOrders", "/currentOrder" -> getAllCurrentOrders(req, res);
+            case "/registerAsUser" -> registerAsUser(req,res);
             default -> sendError(res, HttpServletResponse.SC_NOT_FOUND, "Endpoint not found");
         }
     }
@@ -107,7 +109,8 @@ public class CustomerServlet extends HttpServlet {
 
             Customer customer = customerService.login(
                     request.getPhNo(),
-                    request.getPassword()
+                    request.getPassword(),
+                    request.getRole()
             );
 
             if (customer == null) {
@@ -155,6 +158,17 @@ public class CustomerServlet extends HttpServlet {
         }
 
         displayAllProducts(productIdParameter, res);
+    }
+
+    private void registerAsUser(HttpServletRequest req,HttpServletResponse res) throws IOException{
+        try {
+            int userId = Integer.parseInt(req.getParameter("id"));
+            customerService.registerAsUser(userId);
+        }catch (SQLException e){
+
+            e.printStackTrace();
+            sendError(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
+        }
     }
 
     private void getAllProducts(HttpServletResponse res) throws IOException {

@@ -4,6 +4,7 @@ import com.example.database.DatabaseConnection;
 import com.example.dto.CustomProductsResponse;
 import com.example.model.Product;
 import com.example.model.ProductInDisplay;
+import com.example.model.Variant;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,8 +19,8 @@ public class ProductInDisplayDAO {
 
         String sql = """
                 INSERT INTO ProductInDisplay
-                (ProductId, VendorId, Quantity, Price)
-                VALUES (?, ?, ?, ?)
+                (ProductId, VendorId, Quantity, Price, VariantId)
+                VALUES (?, ?, ?, ?, ?)
                 """;
 
         try (
@@ -30,6 +31,7 @@ public class ProductInDisplayDAO {
             statement.setInt(2, listing.getVendorId());
             statement.setInt(3, listing.getQuantity());
             statement.setDouble(4, listing.getPrice());
+            statement.setInt(5,listing.getVariantId());
 
             statement.executeUpdate();
         }
@@ -101,8 +103,9 @@ public class ProductInDisplayDAO {
 
     public List<CustomProductsResponse> getAllProduct(int productId) throws SQLException{
         String sql = """
-                SELECT * FROM ProductInDisplay 
-                WHERE ProductId = ?""";
+                SELECT pd.ProductId,pd.VendorId,pd.Quantity,pd.Price,pv.SKU,pv.Color,pv.Storage,pv.variantId from productInDisplay as pd JOIN productVariant as pv
+                ON pd.ProductId = pv.ProductId
+                WHERE pd.ProductId = ?""";
         List<CustomProductsResponse> listings = new ArrayList<>();
         try(
                 Connection connection = DatabaseConnection.getConnection();
@@ -118,6 +121,13 @@ public class ProductInDisplayDAO {
                     customProductsResponse.setQuantity(resultSet.getInt("Quantity"));
                     String name = getProductName(resultSet.getInt("ProductId"));
                     customProductsResponse.setProductName(name);
+                    Variant variant = new Variant();
+                    variant.setProductId(resultSet.getInt("ProductId"));
+                    variant.setColor(resultSet.getString("Color"));
+                    variant.setSku(resultSet.getString("SKU"));
+                    variant.setStorage(resultSet.getString("Storage"));
+                    variant.setVariantId(resultSet.getInt("VariantId"));
+                    customProductsResponse.setVariant(variant);
                     customProductsResponse.setVendorName(getVendorName(resultSet.getInt("VendorId")));
                     listings.add(customProductsResponse);
                 }
@@ -128,8 +138,10 @@ public class ProductInDisplayDAO {
 
     public String getVendorName(int vendorid) throws  SQLException{
         String sql = """
-                SELECT Name FROM Vendor
-                WHERE VendorId = ?""";
+                SELECT Name
+                FROM users
+                WHERE UserId = ?
+                  AND Role = 'VENDOR'""";
 
         try(
                 Connection connection = DatabaseConnection.getConnection();
@@ -145,12 +157,7 @@ public class ProductInDisplayDAO {
         }
     }
 
-    public boolean update(
-            int productInDisplayId,
-            int vendorId,
-            Double price,
-            Integer quantity
-    ) throws SQLException {
+    public boolean update(int productInDisplayId, int vendorId, Double price, Integer quantity) throws SQLException {
 
         StringBuilder sql =
                 new StringBuilder("UPDATE ProductInDisplay SET ");
@@ -275,8 +282,11 @@ public class ProductInDisplayDAO {
 
     public String getVendorNameFromProductInDisplayId(int productInDisId) throws SQLException{
         String sql = """
-                SELECT Name FROM ProductInDisplay as p LEFT JOIN Vendor as v
-                ON p.VendorId = v.VendorId
+                SELECT v.Name
+                FROM ProductInDisplay AS p
+                LEFT JOIN users AS v
+                    ON p.VendorId = v.UserId
+                   AND v.Role = 'VENDOR'
                 WHERE p.ProductInDisplayId = ?""";
         try(
                 Connection connection = DatabaseConnection.getConnection();

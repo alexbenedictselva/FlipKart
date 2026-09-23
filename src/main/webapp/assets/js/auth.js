@@ -51,17 +51,20 @@
         setLoading(loginForm, true);
         try {
             const result = await request("login", data);
+            console.log("LOGIN RESPONSE:", result);
+            console.log("ROLE:", result.role);
+            const role = String(result.role || "").trim().toUpperCase().replace(/[_\s-]/g, "");
+            result.role = role;
             localStorage.setItem("flipkartAuth", JSON.stringify(result));
-            if (result.role === "CUSTOMER") {
-                window.location.replace("customer.html");
-                return;
-            }
-            if (result.role === "VENDOR") {
-                window.location.replace("vendor.html");
-                return;
-            }
-            if (result.role === "DELIVERY_PERSON") {
-                window.location.replace("delivery.html");
+            const dashboardByRole = {
+                CUSTOMER: "customer.html",
+                VENDOR: "vendor.html",
+                DELIVERYPARTNER: "delivery.html",
+                DELIVERYPERSON: "delivery.html"
+            };
+            const dashboard = dashboardByRole[role];
+            if (dashboard) {
+                window.location.assign(dashboard);
                 return;
             }
             showNotice("Login successful, but this role does not have a dashboard yet.", "success");

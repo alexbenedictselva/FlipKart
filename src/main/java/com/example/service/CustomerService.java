@@ -1,8 +1,10 @@
 package com.example.service;
 
 import com.example.dao.CustomerDAO;
+import com.example.database.DatabaseConnection;
 import com.example.model.Customer;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 public class CustomerService {
@@ -31,15 +33,15 @@ public class CustomerService {
                     "Password is required"
             );
         }
-        if (customerDAO.existsByPhoneNumber(customer.getPhNo())) {
-            throw new IllegalArgumentException(
-                    "Phone number already registered"
-            );
-        }
         customerDAO.create(customer);
     }
 
-    public Customer login(String phoneNumber, String password)
+    public void registerAsUser(int id) throws SQLException{
+        Connection connection = DatabaseConnection.getConnection();
+        customerDAO.createCustomerRole(connection,id);
+    }
+
+    public Customer login(String phoneNumber, String password, String role)
             throws SQLException {
         if (isBlank(phoneNumber)) {
             throw new IllegalArgumentException(
@@ -51,8 +53,13 @@ public class CustomerService {
                     "Password is required"
             );
         }
+        if (isBlank(role)) {
+            throw new IllegalArgumentException(
+                    "Role is required"
+            );
+        }
         Customer customer =
-                customerDAO.findByPhoneNumber(phoneNumber);
+                customerDAO.findByPhoneNumber(phoneNumber,role);
 
         if (customer == null) {
             return null;

@@ -18,11 +18,14 @@ public class DeliveryPartnerDAO {
     public int findPartner(Connection connection) throws SQLException {
 
         String sql = """
-                SELECT DeliveryPartnerId
-                FROM DeliveryPartner
-                ORDER BY NumberOfOrdersDelivered ASC
-                LIMIT 1
-                """;
+        SELECT dp.UserId
+        FROM deliveryPartner AS dp
+        JOIN userAccount AS ua
+            ON ua.UserId = dp.UserId
+        ORDER BY COALESCE(dp.NumberOfOrdersDelivered, 0) ASC,
+                 dp.UserId ASC
+        LIMIT 1
+        """;
 
         try (
                 PreparedStatement statement =
@@ -30,7 +33,7 @@ public class DeliveryPartnerDAO {
                 ResultSet resultSet = statement.executeQuery()
         ) {
             if (resultSet.next()) {
-                return resultSet.getInt("DeliveryPartnerId");
+                return resultSet.getInt("UserId");
             }
         }
 
@@ -76,7 +79,7 @@ public class DeliveryPartnerDAO {
                             ON pid.ProductId = p.ProductId
                         JOIN `Order` o
                             ON oi.OrderId = o.OrderId
-                        JOIN users c
+                        JOIN users AS c
                             ON o.CustId = c.UserId
                         WHERE d.DeliveryPartnerId = ?
                         AND d.DeliveryStatus IN ('PENDING', 'ASSIGNED', 'PICKED_UP', 'OUT_FOR_DELIVERY')

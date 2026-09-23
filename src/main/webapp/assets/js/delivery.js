@@ -1,6 +1,10 @@
 (() => {
     const auth = readJson("flipkartAuth", null);
-    if (!auth || auth.role !== "DELIVERY_PERSON" || !auth.token) {
+    const role = String(auth?.role || "").toUpperCase().replace(/[_\s-]/g, "");
+    console.log("Delivery");
+    if (!auth || !["DELIVERYPARTNER", "DELIVERYPERSON"].includes(role) || !auth.token) {
+        console.log("NOT");
+
         window.location.replace("index.html");
         return;
     }
@@ -51,6 +55,7 @@
         try { data = await response.json(); } catch (_) { /* Response body is optional. */ }
         if (!response.ok) {
             if (response.status === 401) {
+                console.log("BAD");
                 localStorage.removeItem("flipkartAuth");
                 window.location.replace("index.html");
             }

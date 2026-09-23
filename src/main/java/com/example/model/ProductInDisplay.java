@@ -4,9 +4,18 @@ public class ProductInDisplay {
 
     private int productInDisplayId;
     private int productId;
+    private int variantId;
     private int vendorId;
     private int quantity;
     private double price;
+
+    public int getVariantId() {
+        return variantId;
+    }
+
+    public void setVariantId(int variantId) {
+        this.variantId = variantId;
+    }
 
     public ProductInDisplay() {
     }

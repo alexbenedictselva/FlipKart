@@ -1,5 +1,7 @@
 package com.example.dto;
 
+import com.example.model.Variant;
+
 public class CustomProductsResponse {
     int productInDisplayId;
     int vendorId;
@@ -7,6 +9,15 @@ public class CustomProductsResponse {
     String vendorName;
     double price;
     int quantity;
+    Variant variant;
+
+    public Variant getVariant() {
+        return variant;
+    }
+
+    public void setVariant(Variant variant) {
+        this.variant = variant;
+    }
 
     public int getProductInDisplayId() {
         return productInDisplayId;
