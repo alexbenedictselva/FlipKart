@@ -36,14 +36,18 @@
         return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(value);
     }
     function renderVariant(variant) {
-        if (!variant) return "";
-        const details = [
-            Number.isFinite(Number(variant.productId)) && `Product ID: ${escape(variant.productId)}`,
-            variant.sku && `SKU: ${escape(variant.sku)}`,
-            variant.color && `Color: ${escape(variant.color)}`,
-            variant.storage && `Storage: ${escape(variant.storage)}`
-        ].filter(Boolean);
-        return `<div class="variant-details"><strong>Variant #${escape(variant.variantId)}</strong>${details.length ? `<span>${details.join(" · ")}</span>` : ""}</div>`;
+        if (!variant || typeof variant !== "object" || Array.isArray(variant)) return "";
+        const details = Object.entries(variant)
+            .filter(([key]) => key !== "variantId")
+            .map(([key, value]) => {
+                const label = key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ");
+                const formattedValue = value == null ? String(value)
+                    : typeof value === "object" ? JSON.stringify(value)
+                        : String(value);
+                return `<span>${escape(label)}: ${escape(formattedValue)}</span>`;
+            });
+        const heading = variant.variantId == null ? "Variant" : `Variant #${escape(variant.variantId)}`;
+        return `<div class="variant-details"><strong>${heading}</strong>${details.join("")}</div>`;
     }
     function loading(container) { container.innerHTML = '<div class="empty-state">Loading...</div>'; }
     function empty(container, message) { container.innerHTML = `<div class="empty-state">${escape(message)}</div>`; }

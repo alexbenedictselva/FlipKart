@@ -5,9 +5,14 @@ import com.example.dto.ProductInDisplayUpdateRequest;
 import com.example.dto.VendorOrdersResponse;
 import com.example.model.Product;
 import com.example.model.ProductInDisplay;
+import com.example.service.CartService;
 import com.example.service.ProductInDisplayService;
+import com.example.service.VariantService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +27,8 @@ public class VendorServlet extends HttpServlet {
 
     private final ProductInDisplayService service = new ProductInDisplayService();
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    private final VariantService variantService = new VariantService();
+    private final CartService cartService = new CartService();
     @Override
     protected void service(
             HttpServletRequest req,
@@ -46,19 +52,34 @@ public class VendorServlet extends HttpServlet {
         setJsonResponse(res);
 
         try {
-            ProductInDisplay listing = objectMapper.readValue(
-                    req.getInputStream(),
-                    ProductInDisplay.class
-            );
-
+//            ProductInDisplay listing = objectMapper.readValue(
+//                    req.getInputStream(),
+//                    ProductInDisplay.class
+//            );
+//
             int vendorId = getAuthenticatedUserId(req);
+            JsonNode root = objectMapper.readTree(req.getInputStream());
 
+            JsonNode variantNode = root.get("variant");
+
+            Map<String, String> variant =
+                    objectMapper.convertValue(
+                            variantNode,
+                            new TypeReference<Map<String, String>>() {}
+                    );
+
+            ((ObjectNode) root).remove("variant");
+
+            ProductInDisplay listing =
+                    objectMapper.treeToValue(root, ProductInDisplay.class);
+
+            int variantId = variantService.postVariant(variant,listing.getProductId());
             service.createProduct(
                     listing.getProductId(),
                     vendorId,
                     listing.getPrice(),
                     listing.getQuantity(),
-                    listing.getVariantId()
+                    variantId
             );
 
             res.setStatus(HttpServletResponse.SC_CREATED);
@@ -264,7 +285,6 @@ public class VendorServlet extends HttpServlet {
         try {
             String listingIdParameter =
                     req.getParameter("productInDisplayId");
-
             if (listingIdParameter == null) {
                 sendError(
                         res,

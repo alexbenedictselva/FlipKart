@@ -10,6 +10,7 @@
     const toastElement = document.querySelector("#toast");
     const newProductForm = document.querySelector("#new-product-form");
     const productCategory = document.querySelector("#product-category");
+    const variantRows = document.querySelector("#variant-rows");
     let toastTimer;
 
     function readJson(key, fallback) {
@@ -25,12 +26,16 @@
     }
     function renderVariant(variant) {
         if (!variant) return "";
-        const details = [
-            variant.sku && `SKU: ${escape(variant.sku)}`,
-            variant.color && `Color: ${escape(variant.color)}`,
-            variant.storage && `Storage: ${escape(variant.storage)}`
-        ].filter(Boolean);
-        return `<div class="variant-details"><strong>Variant #${escape(variant.variantId)}</strong>${details.length ? `<span>${details.join(" · ")}</span>` : ""}</div>`;
+        const details = Object.entries(variant)
+            .filter(([key]) => key !== "variantId")
+            .map(([key, value]) => `${escape(key)}: ${escape(value)}`);
+        return `<div class="variant-details"><strong>Variant details</strong>${details.length ? `<span>${details.join(" · ")}</span>` : ""}</div>`;
+    }
+    function addVariantRow() {
+        const row = document.createElement("div");
+        row.className = "variant-row";
+        row.innerHTML = '<label>Key<input class="variant-key" type="text" maxlength="100" required placeholder="e.g. color"></label><label>Value<input class="variant-value" type="text" maxlength="255" required placeholder="e.g. black"></label><button class="remove-variant" type="button" aria-label="Remove variant detail">Remove</button>';
+        variantRows.append(row);
     }
     function loading(container) { container.innerHTML = '<div class="empty-state">Loading...</div>'; }
     function empty(container, message) { container.innerHTML = `<div class="empty-state">${escape(message)}</div>`; }
@@ -124,10 +129,21 @@
     async function postProduct(event) {
         event.preventDefault();
         if (!newProductForm.reportValidity()) return;
-        const button = newProductForm.querySelector("button");
+        const button = newProductForm.querySelector('button[type="submit"]');
         setLoading(button, true, "Post product");
         try {
             const data = Object.fromEntries(new FormData(newProductForm));
+            const variant = {};
+            for (const row of variantRows.querySelectorAll(".variant-row")) {
+                const key = row.querySelector(".variant-key").value.trim();
+                const value = row.querySelector(".variant-value").value.trim();
+                if (!key || !value) throw new Error("Enter both a key and value for every variant detail.");
+                const normalizedKey = key.toLowerCase();
+                if (Object.keys(variant).some((existing) => existing.toLowerCase() === normalizedKey)) {
+                    throw new Error(`Variant key “${key}” is repeated. Use a unique key for each detail.`);
+                }
+                variant[key] = value;
+            }
             const currentAuth = readJson("flipkartAuth", null);
             await api("vendor/products", {
                 method: "POST",
@@ -136,10 +152,12 @@
                     vendorId: Number(currentAuth.userId),
                     price: Number(data.price),
                     quantity: Number(data.quantity),
-                    variantId: Number(data.variantId)
+                    variant
                 })
             });
             newProductForm.reset();
+            variantRows.innerHTML = "";
+            addVariantRow();
             toast("Product posted successfully.");
             await loadProducts();
         } catch (error) { toast(error.message, "error"); }
@@ -182,6 +200,21 @@
     }
 
     newProductForm.addEventListener("submit", postProduct);
+    newProductForm.addEventListener("click", (event) => {
+        if (event.target.closest("#add-variant")) {
+            event.preventDefault();
+            addVariantRow();
+            return;
+        }
+        const remove = event.target.closest(".remove-variant");
+        if (!remove) return;
+        event.preventDefault();
+        if (variantRows.querySelectorAll(".variant-row").length === 1) {
+            toast("Keep at least one variant detail.", "error");
+            return;
+        }
+        remove.closest(".variant-row").remove();
+    });
     products.addEventListener("click", (event) => {
         const updateButton = event.target.closest(".update-product");
         const deleteButton = event.target.closest(".delete-product");
@@ -194,6 +227,7 @@
         window.location.replace("index.html");
     });
 
+    addVariantRow();
     loadProducts();
     loadProductCategories();
 })();

@@ -3,12 +3,16 @@ package com.example.servlet;
 import com.example.dto.*;
 import com.example.model.Customer;
 import com.example.model.Product;
+import com.example.model.ProductInDisplay;
 import com.example.security.JwtUtil;
 import com.example.service.CustomerService;
 import com.example.service.OrderService;
 import com.example.service.ProductInDisplayService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,6 +21,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class CustomerServlet extends HttpServlet {
 
@@ -157,7 +162,7 @@ public class CustomerServlet extends HttpServlet {
             return;
         }
 
-        displayAllProducts(productIdParameter, res);
+        displayAllProducts(req,productIdParameter, res);
     }
 
     private void registerAsUser(HttpServletRequest req,HttpServletResponse res) throws IOException{
@@ -189,10 +194,30 @@ public class CustomerServlet extends HttpServlet {
     }
 
     private void displayAllProducts(
+            HttpServletRequest req,
             String productIdParameter,
             HttpServletResponse res
     ) throws IOException {
         try {
+//            int vendorId = getAuthenticatedUserId(req);
+//            JsonNode root = objectMapper.readTree(req.getInputStream());
+//
+//            JsonNode variantNode = root.get("variant");
+//
+//            Map<String, String> variant =
+//                    objectMapper.convertValue(
+//                            variantNode,
+//                            new TypeReference<Map<String, String>>() {}
+//                    );
+//
+//            ((ObjectNode) root).remove("variant");
+//
+//            ProductInDisplay listing =
+//                    objectMapper.treeToValue(root, ProductInDisplay.class);
+//
+//            int variantId = variantService.postVariant(variant,listing.getProductId());
+
+            //
             int productId = Integer.parseInt(productIdParameter);
 
             List<CustomProductsResponse> productInDisplays =

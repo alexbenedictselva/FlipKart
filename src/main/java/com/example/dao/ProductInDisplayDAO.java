@@ -5,6 +5,7 @@ import com.example.dto.CustomProductsResponse;
 import com.example.model.Product;
 import com.example.model.ProductInDisplay;
 import com.example.model.Variant;
+import com.example.service.VariantService;
 
 import javax.print.DocFlavor;
 import java.sql.Connection;
@@ -13,9 +14,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ProductInDisplayDAO {
-
+    private final VariantHandlerDAO variantHandlerDAO = new VariantHandlerDAO();
     public void create(ProductInDisplay listing) throws SQLException {
 
         String sql = """
@@ -93,8 +95,9 @@ public class ProductInDisplayDAO {
                     listing.setPrice(
                             resultSet.getDouble("Price")
                     );
-                    Variant variant = getVariant(resultSet.getInt("VariantId"));
-                    listing.setVariant(variant);
+//                    listing.setVariant(variant);
+                    Map<String,String> mp = variantHandlerDAO.getAllVariantDetails(resultSet.getInt("VariantId"),connection);
+                    listing.setVariant(mp);
                     listings.add(listing);
                 }
             }
@@ -122,8 +125,10 @@ public class ProductInDisplayDAO {
                     customProductsResponse.setQuantity(resultSet.getInt("Quantity"));
                     String name = getProductName(resultSet.getInt("ProductId"));
                     customProductsResponse.setProductName(name);
-                    Variant variant = getVariant(resultSet.getInt("VariantId"));
-                    customProductsResponse.setVariant(variant);
+//                    Variant variant = getVariant(resultSet.getInt("VariantId"));
+//                    customProductsResponse.setVariant(variant);
+                    Map<String,String> mp = variantHandlerDAO.getAllVariantDetails(resultSet.getInt("VariantId"),connection);
+                    customProductsResponse.setVariant(mp);
                     customProductsResponse.setVendorName(getVendorName(resultSet.getInt("VendorId")));
                     listings.add(customProductsResponse);
                 }
@@ -157,15 +162,19 @@ public class ProductInDisplayDAO {
     }
 
     public String getVendorName(int vendorid) throws  SQLException{
-        String sql = """
-                SELECT Name
-                FROM users
-                WHERE UserId = ?
-                  AND Role = 'VENDOR'""";
+//        String sql = """
+//                SELECT Name
+//                FROM users
+//                WHERE UserId = ?
+//                  AND Role = 'VENDOR'""";
+
+        String sql1 = """
+                SELECT Name FROM Vendor
+                WHERE VendorId = ?""";
 
         try(
                 Connection connection = DatabaseConnection.getConnection();
-                PreparedStatement statement = connection.prepareStatement(sql);
+                PreparedStatement statement = connection.prepareStatement(sql1);
         ){
             statement.setInt(1,vendorid);
             try(ResultSet resultSet = statement.executeQuery()){

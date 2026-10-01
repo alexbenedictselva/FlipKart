@@ -2,6 +2,8 @@ package com.example.dto;
 
 import com.example.model.Variant;
 
+import java.util.Map;
+
 public class CustomProductsResponse {
     int productInDisplayId;
     int vendorId;
@@ -9,13 +11,13 @@ public class CustomProductsResponse {
     String vendorName;
     double price;
     int quantity;
-    Variant variant;
+    Map<String,String> variant;
 
-    public Variant getVariant() {
+    public Map<String, String> getVariant() {
         return variant;
     }
 
-    public void setVariant(Variant variant) {
+    public void setVariant(Map<String, String> variant) {
         this.variant = variant;
     }
 
